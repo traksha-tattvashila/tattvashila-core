@@ -66,7 +66,7 @@ Copy `.env.example` to `.env` and fill in values:
 
 - **Sprint 1** ✅ — Foundation Layer (env config, logger, module registry, bootloader)
 - **Sprint 2** ✅ — Infrastructure Layer (PostgreSQL + Drizzle ORM, migrations, ServiceContainer, AppError)
-- **Sprint 3** — TRK (Constitutional Identity Foundation)
+- **Sprint 3** ✅ — Constitutional Identity Data Foundation (identity_state enum, identities table, identity_operational_metadata table, migration)
 - **Sprint 4** — Tattvaloka (Constitutional Participation Layer)
 - **Sprint 5** — Tattvapeetha (Constitutional Growth Layer)
 - **Sprint 6** — Raksha Basic (Women's Safety Foundation)
