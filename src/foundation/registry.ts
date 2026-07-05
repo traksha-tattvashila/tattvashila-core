@@ -1,13 +1,17 @@
 import type { Logger } from './logger.js';
 
+export interface ModuleServices {
+  readonly logger: Logger;
+}
+
 export interface Module {
   readonly name: string;
-  init(logger: Logger): Promise<void>;
+  init(services: ModuleServices): Promise<void>;
 }
 
 export interface ModuleRegistry {
   register(module: Module): void;
-  initAll(logger: Logger): Promise<void>;
+  initAll(services: ModuleServices): Promise<void>;
 }
 
 export function createModuleRegistry(): ModuleRegistry {
@@ -22,11 +26,11 @@ export function createModuleRegistry(): ModuleRegistry {
     modules.push(module);
   }
 
-  async function initAll(logger: Logger): Promise<void> {
+  async function initAll(services: ModuleServices): Promise<void> {
     for (const module of modules) {
-      const moduleLogger = logger.child(module.name);
+      const moduleLogger = services.logger.child(module.name);
       moduleLogger.info('Initializing module');
-      await module.init(moduleLogger);
+      await module.init({ ...services, logger: moduleLogger });
       moduleLogger.info('Module ready');
     }
   }

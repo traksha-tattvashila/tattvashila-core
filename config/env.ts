@@ -7,6 +7,7 @@ export type LogLevel = (typeof LOG_LEVEL_VALUES)[number];
 export interface Env {
   readonly nodeEnv: NodeEnv;
   readonly logLevel: LogLevel;
+  readonly databaseUrl: string;
 }
 
 function parseNodeEnv(raw: string | undefined): NodeEnv {
@@ -29,10 +30,16 @@ function parseLogLevel(raw: string | undefined): LogLevel {
   );
 }
 
+function parseDatabaseUrl(raw: string | undefined): string {
+  if (!raw) throw new Error('Missing required environment variable: DATABASE_URL');
+  return raw;
+}
+
 function buildEnv(): Env {
   return Object.freeze({
     nodeEnv: parseNodeEnv(process.env['NODE_ENV']),
     logLevel: parseLogLevel(process.env['LOG_LEVEL']),
+    databaseUrl: parseDatabaseUrl(process.env['DATABASE_URL']),
   });
 }
 

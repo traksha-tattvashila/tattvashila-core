@@ -1,4 +1,4 @@
-import { boot } from './foundation/bootloader.js';
+import { boot } from './bootloader.js';
 import { logger } from './foundation/logger.js';
 
 boot().catch((error: unknown) => {

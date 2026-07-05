@@ -21,11 +21,17 @@ The backend serves as the constitutional execution layer and is decoupled from a
 ## Repository Structure
 
 ```
-config/           # Application configuration (environment schema)
+config/              # Application configuration (environment schema)
+drizzle/migrations/  # Generated SQL migrations (created by db:generate)
 src/
-  foundation/     # Runtime foundation — env, logger, registry, bootloader
-  modules/        # Constitutional business modules (Sprint 2+)
-tests/            # Test suites
+  bootloader.ts      # Composition root — wires foundation + infrastructure
+  foundation/        # Runtime foundation — logger, registry
+  infrastructure/    # Reusable infrastructure — database, errors, container
+    database/        # pg pool, Drizzle client, migrator
+    errors/          # Shared error types
+  modules/           # Constitutional business modules (Sprint 3+)
+tests/               # Test suites
+drizzle.config.ts    # drizzle-kit configuration
 ```
 
 ## How to Run
@@ -36,6 +42,8 @@ npm run dev       # Run with --watch (auto-restart on file changes)
 npm run typecheck # TypeScript type check only
 npm run test      # Run test suite
 npm run build     # Compile to dist/
+npm run db:generate  # Generate SQL migration files from schema changes
+npm run db:migrate   # Apply pending migrations to the database
 ```
 
 ## Environment Variables
@@ -57,10 +65,11 @@ Copy `.env.example` to `.env` and fill in values:
 ## Sprint Status
 
 - **Sprint 1** ✅ — Foundation Layer (env config, logger, module registry, bootloader)
-- **Sprint 2** — TRK (Constitutional Identity Foundation)
-- **Sprint 3** — Tattvaloka (Constitutional Participation Layer)
-- **Sprint 4** — Tattvapeetha (Constitutional Growth Layer)
-- **Sprint 5** — Raksha Basic (Women's Safety Foundation)
+- **Sprint 2** ✅ — Infrastructure Layer (PostgreSQL + Drizzle ORM, migrations, ServiceContainer, AppError)
+- **Sprint 3** — TRK (Constitutional Identity Foundation)
+- **Sprint 4** — Tattvaloka (Constitutional Participation Layer)
+- **Sprint 5** — Tattvapeetha (Constitutional Growth Layer)
+- **Sprint 6** — Raksha Basic (Women's Safety Foundation)
 
 ## User Preferences
 
