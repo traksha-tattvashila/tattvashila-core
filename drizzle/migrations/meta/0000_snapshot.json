@@ -1,5 +1,5 @@
 {
-  "id": "bac22615-b8a5-494a-91b3-a50220593924",
+  "id": "ddc47e1b-6bca-49b1-b09f-d6893c90456b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -81,11 +81,9 @@
         },
         "processing_state": {
           "name": "processing_state",
-          "type": "processing_state",
-          "typeSchema": "public",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'PENDING'"
+          "notNull": true
         },
         "state_reason": {
           "name": "state_reason",
@@ -262,15 +260,6 @@
       "values": [
         "TMP",
         "TRK"
-      ]
-    },
-    "public.processing_state": {
-      "name": "processing_state",
-      "schema": "public",
-      "values": [
-        "PENDING",
-        "ACTIVE",
-        "SUSPENDED"
       ]
     }
   },

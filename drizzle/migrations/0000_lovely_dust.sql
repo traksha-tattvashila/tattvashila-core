@@ -1,6 +1,5 @@
 CREATE TYPE "public"."contact_type" AS ENUM('phone', 'email');--> statement-breakpoint
 CREATE TYPE "public"."identity_state" AS ENUM('TMP', 'TRK');--> statement-breakpoint
-CREATE TYPE "public"."processing_state" AS ENUM('PENDING', 'ACTIVE', 'SUSPENDED');--> statement-breakpoint
 CREATE TABLE "identities" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"identity_state" "identity_state" DEFAULT 'TMP' NOT NULL,
@@ -11,7 +10,7 @@ CREATE TABLE "identities" (
 CREATE TABLE "identity_operational_metadata" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"identity_id" uuid NOT NULL,
-	"processing_state" "processing_state" DEFAULT 'PENDING' NOT NULL,
+	"processing_state" text NOT NULL,
 	"state_reason" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,

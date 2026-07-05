@@ -8,21 +8,15 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
+// Note: processing_state is intentionally TEXT, not an enum.
+// Operational states are not constitutionally finalized; an enum would
+// prematurely freeze the lifecycle and force DB migrations for every
+// operational state change during Sprint 4 development.
+
 // ─── Constitutional identity state ──────────────────────────────────────────
 // The only two valid constitutional identity states.
 // Operational states (PENDING, ACTIVE, etc.) live in processingState below.
 export const identityState = pgEnum('identity_state', ['TMP', 'TRK']);
-
-// ─── Operational processing state ───────────────────────────────────────────
-// Engine-facing states that describe WHAT is being processed.
-// These are not constitutional identity states.
-// New operational states must be added here via migration — arbitrary strings
-// are not permitted.
-export const processingState = pgEnum('processing_state', [
-  'PENDING',
-  'ACTIVE',
-  'SUSPENDED',
-]);
 
 // ─── Verified contact type ───────────────────────────────────────────────────
 // The types of contact attributes that can be verified and linked to an identity.
@@ -115,9 +109,7 @@ export const identityOperationalMetadata = pgTable(
       .notNull()
       .references(() => identities.id, { onDelete: 'restrict' }),
 
-    processingState: processingState('processing_state')
-      .notNull()
-      .default('PENDING'),
+    processingState: text('processing_state').notNull(),
 
     // Optional free-text reason recorded by the engine at state transition.
     stateReason: text('state_reason'),
