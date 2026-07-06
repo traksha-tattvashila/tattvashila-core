@@ -1,5 +1,7 @@
 import type { Express } from 'express';
 
+import type { IdentityService } from '../../modules/trk/service.js';
+import { createIdentityRouter } from '../../modules/trk/http/routes.js';
 import type { VerificationOrchestrationService } from '../../modules/verification/orchestration/orchestration-service.js';
 import { createVerificationRouter } from '../../modules/verification/http/routes.js';
 
@@ -9,6 +11,7 @@ import { createVerificationRouter } from '../../modules/verification/http/routes
 // parameter list with each new route module.
 export interface AppDependencies {
   readonly orchestrationService: VerificationOrchestrationService;
+  readonly identityService: IdentityService;
 }
 
 // ─── Route registration ───────────────────────────────────────────────────────
@@ -19,4 +22,6 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
     '/verifications',
     createVerificationRouter(deps.orchestrationService),
   );
+
+  app.use('/identities', createIdentityRouter(deps.identityService));
 }

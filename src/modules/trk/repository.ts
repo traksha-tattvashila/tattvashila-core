@@ -1,5 +1,8 @@
+import { and, eq } from 'drizzle-orm';
+
 import { AppError } from '../../infrastructure/errors/app-error.js';
 import type { DatabaseClient } from '../../infrastructure/database/client.js';
+import type { ContactType, Identity } from './models.js';
 import {
   identities,
   identityOperationalMetadata,
@@ -25,6 +28,20 @@ export interface TrkRepository {
     phone: string; // E.164 — normalised by the caller
     email: string; // lowercase — normalised by the caller
   }): Promise<CreatedIdentity>;
+
+  // Retrieves a full identity read model (state, verified contacts,
+  // timestamps) by its constitutional UUID.
+  // Returns undefined if no identity exists with that id — callers decide
+  // how to surface absence (the domain service maps this to IdentityError).
+  findById(id: string): Promise<Identity | undefined>;
+
+  // Retrieves a full identity read model by one of its verified contacts.
+  // Returns undefined if no identity has a verified contact matching the
+  // given type and value.
+  findByVerifiedContact(
+    contactType: ContactType,
+    contactValue: string,
+  ): Promise<Identity | undefined>;
 }
 
 // ─── PostgreSQL error codes ───────────────────────────────────────────────────
@@ -95,5 +112,78 @@ export function createTrkRepository(db: DatabaseClient): TrkRepository {
         throw error;
       }
     },
+
+    async findById(id) {
+      const rows = await db
+        .select({
+          id: identities.id,
+          state: identities.identityState,
+          createdAt: identities.createdAt,
+          updatedAt: identities.updatedAt,
+          contactType: identityVerifiedContacts.contactType,
+          contactValue: identityVerifiedContacts.contactValue,
+        })
+        .from(identities)
+        .leftJoin(
+          identityVerifiedContacts,
+          eq(identityVerifiedContacts.identityId, identities.id),
+        )
+        .where(eq(identities.id, id));
+
+      return rowsToIdentity(rows);
+    },
+
+    async findByVerifiedContact(contactType, contactValue) {
+      const contactRows = await db
+        .select({ identityId: identityVerifiedContacts.identityId })
+        .from(identityVerifiedContacts)
+        .where(
+          and(
+            eq(identityVerifiedContacts.contactType, contactType),
+            eq(identityVerifiedContacts.contactValue, contactValue),
+          ),
+        )
+        .limit(1);
+
+      const match = contactRows[0];
+      if (!match) return undefined;
+
+      return this.findById(match.identityId);
+    },
+  };
+}
+
+// ─── Row mapping ───────────────────────────────────────────────────────────────
+// Shape of a single joined row from the findById() query above.
+interface IdentityContactRow {
+  id: string;
+  state: string;
+  createdAt: Date;
+  updatedAt: Date;
+  contactType: ContactType | null;
+  contactValue: string | null;
+}
+
+// Collapses the joined identity+contacts rows into a single Identity read
+// model. A left join means an identity with zero contacts still returns one
+// row (with null contact columns), so the empty-contacts case is handled
+// naturally rather than as a special case.
+function rowsToIdentity(rows: IdentityContactRow[]): Identity | undefined {
+  const first = rows[0];
+  if (!first) return undefined;
+
+  const contacts = rows
+    .filter(
+      (row): row is IdentityContactRow & { contactType: ContactType; contactValue: string } =>
+        row.contactType !== null && row.contactValue !== null,
+    )
+    .map((row) => ({ type: row.contactType, value: row.contactValue }));
+
+  return {
+    id: first.id,
+    state: first.state,
+    contacts,
+    createdAt: first.createdAt,
+    updatedAt: first.updatedAt,
   };
 }

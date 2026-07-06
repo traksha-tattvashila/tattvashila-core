@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 import type { Logger } from '../../foundation/logger.js';
 import { isAppError } from '../../infrastructure/errors/app-error.js';
+import { IdentityErrorCode, isIdentityError } from '../../modules/trk/errors.js';
 import { EngineErrorCode, isEngineError } from '../../modules/verification/errors.js';
 
 // ─── Engine error → HTTP status mapping ──────────────────────────────────────
@@ -30,6 +31,23 @@ function httpStatusForEngineCode(code: EngineErrorCode): number {
   }
 }
 
+// ─── Identity error → HTTP status mapping ────────────────────────────────────
+// IdentityError already carries the correct statusCode (404) set at
+// construction, so no remapping switch is needed here — this function exists
+// only to keep the mapping style consistent and exhaustive as codes are added.
+function httpStatusForIdentityCode(code: IdentityErrorCode): number {
+  switch (code) {
+    case IdentityErrorCode.NOT_FOUND:
+      return 404;
+    default: {
+      // Exhaustiveness guard — new codes must be mapped above.
+      const _: never = code;
+      void _;
+      return 404;
+    }
+  }
+}
+
 // ─── Global error handler ─────────────────────────────────────────────────────
 // Must be registered as the last middleware in the Express app so that
 // errors forwarded via next(err) from all preceding handlers reach it.
@@ -44,6 +62,12 @@ export function errorHandler(logger: Logger) {
     if (isEngineError(err)) {
       const status = httpStatusForEngineCode(err.engineCode);
       res.status(status).json({ error: { code: err.engineCode, message: err.message } });
+      return;
+    }
+
+    if (isIdentityError(err)) {
+      const status = httpStatusForIdentityCode(err.identityCode);
+      res.status(status).json({ error: { code: err.identityCode, message: err.message } });
       return;
     }
 
