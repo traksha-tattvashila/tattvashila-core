@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 import type { Logger } from '../../foundation/logger.js';
 import { isAppError } from '../../infrastructure/errors/app-error.js';
+import { AuthErrorCode, isAuthError } from '../../modules/auth/errors.js';
 import { IdentityErrorCode, isIdentityError } from '../../modules/trk/errors.js';
 import { EngineErrorCode, isEngineError } from '../../modules/verification/errors.js';
 
@@ -52,6 +53,33 @@ function httpStatusForIdentityCode(code: IdentityErrorCode): number {
   }
 }
 
+// ─── Auth error → HTTP status mapping ────────────────────────────────────────
+// AuthError already carries the correct statusCode (set at construction from
+// AUTH_ERROR_STATUS) for every code, so this switch is redundant with that
+// lookup by design — it exists purely to keep the mapping style consistent
+// with EngineError/IdentityError and to force a compile error if a new
+// AuthErrorCode is added without an explicit status decision here.
+function httpStatusForAuthCode(code: AuthErrorCode): number {
+  switch (code) {
+    case AuthErrorCode.INVALID_CREDENTIALS:
+      return 401;
+    case AuthErrorCode.CREDENTIAL_ALREADY_EXISTS:
+      return 409;
+    case AuthErrorCode.WEAK_PASSWORD:
+      return 422;
+    case AuthErrorCode.REFRESH_TOKEN_INVALID:
+      return 401;
+    case AuthErrorCode.ACCESS_TOKEN_INVALID:
+      return 401;
+    default: {
+      // Exhaustiveness guard — new codes must be mapped above.
+      const _: never = code;
+      void _;
+      return 401;
+    }
+  }
+}
+
 // ─── Global error handler ─────────────────────────────────────────────────────
 // Must be registered as the last middleware in the Express app so that
 // errors forwarded via next(err) from all preceding handlers reach it.
@@ -72,6 +100,12 @@ export function errorHandler(logger: Logger) {
     if (isIdentityError(err)) {
       const status = httpStatusForIdentityCode(err.identityCode);
       res.status(status).json({ error: { code: err.identityCode, message: err.message } });
+      return;
+    }
+
+    if (isAuthError(err)) {
+      const status = httpStatusForAuthCode(err.authCode);
+      res.status(status).json({ error: { code: err.authCode, message: err.message } });
       return;
     }
 

@@ -1,5 +1,7 @@
 import type { Express } from 'express';
 
+import { createAuthRouter } from '../../modules/auth/http/routes.js';
+import type { AuthService } from '../../modules/auth/service.js';
 import type { IdentityService } from '../../modules/trk/service.js';
 import { createIdentityRouter } from '../../modules/trk/http/routes.js';
 import { createTrkTransitionRouter } from '../../modules/trk/http/transition-routes.js';
@@ -15,6 +17,7 @@ export interface AppDependencies {
   readonly orchestrationService: VerificationOrchestrationService;
   readonly identityService: IdentityService;
   readonly transitionService: TrkTransitionService;
+  readonly authService: AuthService;
 }
 
 // ─── Route registration ───────────────────────────────────────────────────────
@@ -28,4 +31,5 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
 
   app.use('/identities', createIdentityRouter(deps.identityService));
   app.use('/identities', createTrkTransitionRouter(deps.transitionService));
+  app.use('/auth', createAuthRouter(deps.authService, deps.identityService));
 }

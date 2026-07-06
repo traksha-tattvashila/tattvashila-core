@@ -11,6 +11,9 @@ import {
 import { createVerificationProvider } from './infrastructure/verification/providers/verification-provider.js';
 import { createRecordLock } from './infrastructure/concurrency/record-lock.js';
 import { createExpressApp } from './http/server.js';
+import { loadAuthConfig } from './modules/auth/config.js';
+import { createAuthRepository } from './modules/auth/repository.js';
+import { createAuthService } from './modules/auth/service.js';
 import { createVerificationEngine } from './modules/verification/engine.js';
 import { createTrkRepository } from './modules/trk/repository.js';
 import { createIdentityService } from './modules/trk/service.js';
@@ -62,11 +65,21 @@ boot()
     // ── Sprint 7 services ────────────────────────────────────────────────────
     const transitionService = createTrkTransitionService(trkRepository);
 
+    // ── Sprint 9 services (Authentication Infrastructure) ────────────────────
+    const authConfig = loadAuthConfig();
+    const authRepository = createAuthRepository(ctx.db);
+    const authService = createAuthService({
+      repository: authRepository,
+      identityService,
+      config: authConfig,
+    });
+
     // ── HTTP server ───────────────────────────────────────────────────────────
     const app = createExpressApp(ctx, {
       orchestrationService,
       identityService,
       transitionService,
+      authService,
     });
 
     const server = app.listen(PORT, '0.0.0.0', () => {
