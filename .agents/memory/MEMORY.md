@@ -1,4 +1,5 @@
 - [Sprint freeze boundaries](sprint-freeze-boundaries.md) — what is constitutionally frozen and the amendment rules that govern changes.
 - [Verification concurrency design](verification-concurrency.md) — Option B locking decision and where the per-record lock lives.
 - [Provider wiring rules](provider-wiring.md) — dev providers gate, production fail-fast, and where real providers must be injected.
+- [Auth module boundary design](auth-module-boundary.md) — no DB FK from auth tables to identities; existence enforced via IdentityService instead.
 - [TRK identity state transitions](trk-state-transitions.md) — atomic conditional UPDATE pattern for TMP->TRK; no app-level lock needed.
