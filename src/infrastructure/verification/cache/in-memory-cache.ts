@@ -37,15 +37,20 @@ export function createInMemoryVerificationCache(): VerificationCache {
       return record;
     },
 
-    async update(id: string, status: VerificationStatus): Promise<void> {
+    async update(id: string, status: VerificationStatus): Promise<boolean> {
       const record = store.get(id);
 
-      if (record === undefined || isExpired(record)) {
-        if (record !== undefined) store.delete(id);
-        return;
+      if (record === undefined) {
+        return false;
+      }
+
+      if (isExpired(record)) {
+        store.delete(id);
+        return false;
       }
 
       store.set(id, { ...record, status });
+      return true;
     },
 
     async delete(id: string): Promise<void> {
