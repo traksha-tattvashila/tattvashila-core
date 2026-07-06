@@ -20,3 +20,13 @@ two concurrent confirms on the same session could both read `attempts: 4` agains
 
 **How to apply:** Any new code that reads-then-writes a verification session must acquire
 the session lock before the read. Do not add locking inside the cache or engine directly.
+
+**Sprint 5 engineering-review fix (session completion retriability):** `confirmLocked()`
+must check `current.phoneConfirmed && current.emailConfirmed` and retry TMP identity
+creation directly (skip re-verifying the OTP) before applying the "already used" guards.
+
+**Why:** OTP consumption (engine.verify) and TMP identity creation (trkRepository) are
+separate steps. If identity creation throws after both OTPs are already consumed, the
+session would otherwise remain stuck — the "already used" guards reject every retry
+until the session's TTL expires, even though no identity was ever created. Retrying
+completion directly (extracted as `completeSession()`) keeps the session recoverable.

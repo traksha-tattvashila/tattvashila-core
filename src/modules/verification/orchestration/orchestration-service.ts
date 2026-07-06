@@ -119,6 +119,17 @@ export function createVerificationOrchestrationService(
       );
     }
 
+    // If both channels are already confirmed, a prior TMP identity creation
+    // attempt for this session must have failed after both OTPs were
+    // consumed (e.g. a transient database error) — otherwise the session
+    // would already have been deleted by completeSession(). Retry identity
+    // creation directly rather than re-verifying an already-consumed OTP,
+    // which would otherwise deadlock the session as permanently unusable
+    // until its TTL expires.
+    if (current.phoneConfirmed && current.emailConfirmed) {
+      return completeSession(current);
+    }
+
     const isPhone = current.phoneVerificationId === verificationId;
     const isEmail = current.emailVerificationId === verificationId;
 
@@ -156,26 +167,34 @@ export function createVerificationOrchestrationService(
 
     // ── Constitutional rule ────────────────────────────────────────────────
     // A TMP identity is created only after BOTH channels have been confirmed.
-    // All three database writes occur inside a single transaction; if any
-    // write fails, the transaction is rolled back and no identity is created.
     if (updated.phoneConfirmed && updated.emailConfirmed) {
-      const identity = await trkRepository.createIdentityWithContacts({
-        phone: updated.phone,
-        email: updated.email,
-      });
-
-      // Session fulfilled — remove it from the store.
-      sessionStore.delete(updated.id);
-
-      logger.info('Constitutional TMP identity created', {
-        identityId: identity.id,
-        sessionId: updated.id,
-      });
-
-      return { sessionComplete: true, identity };
+      return completeSession(updated);
     }
 
     return { sessionComplete: false };
+  }
+
+  // Creates the TMP identity for a fully-confirmed session.
+  // All three database writes occur inside a single transaction; if any
+  // write fails, the transaction is rolled back and no identity is created.
+  // The session is only removed from the store on success, so a failure
+  // here leaves the session intact for confirmLocked() to retry.
+  async function completeSession(
+    session: DualVerificationSession,
+  ): Promise<ConfirmResult> {
+    const identity = await trkRepository.createIdentityWithContacts({
+      phone: session.phone,
+      email: session.email,
+    });
+
+    sessionStore.delete(session.id);
+
+    logger.info('Constitutional TMP identity created', {
+      identityId: identity.id,
+      sessionId: session.id,
+    });
+
+    return { sessionComplete: true, identity };
   }
 
   return { initiate, confirm };
