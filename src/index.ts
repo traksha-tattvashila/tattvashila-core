@@ -13,6 +13,7 @@ import { createExpressApp } from './http/server.js';
 import { createVerificationEngine } from './modules/verification/engine.js';
 import { createTrkRepository } from './modules/trk/repository.js';
 import { createIdentityService } from './modules/trk/service.js';
+import { createTrkTransitionService } from './modules/trk/transition-service.js';
 import {
   createDualVerificationSessionStore,
 } from './modules/verification/orchestration/session.js';
@@ -76,8 +77,15 @@ boot()
     // ── Sprint 6 services ────────────────────────────────────────────────────
     const identityService = createIdentityService(trkRepository);
 
+    // ── Sprint 7 services ────────────────────────────────────────────────────
+    const transitionService = createTrkTransitionService(trkRepository);
+
     // ── HTTP server ───────────────────────────────────────────────────────────
-    const app = createExpressApp(ctx, { orchestrationService, identityService });
+    const app = createExpressApp(ctx, {
+      orchestrationService,
+      identityService,
+      transitionService,
+    });
 
     const server = app.listen(PORT, '0.0.0.0', () => {
       ctx.logger.info('HTTP server listening', { port: PORT });

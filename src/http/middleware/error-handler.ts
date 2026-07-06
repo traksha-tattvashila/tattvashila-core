@@ -32,13 +32,17 @@ function httpStatusForEngineCode(code: EngineErrorCode): number {
 }
 
 // ─── Identity error → HTTP status mapping ────────────────────────────────────
-// IdentityError already carries the correct statusCode (404) set at
-// construction, so no remapping switch is needed here — this function exists
-// only to keep the mapping style consistent and exhaustive as codes are added.
+// IdentityError already carries the correct statusCode (set at construction
+// from IDENTITY_ERROR_STATUS) for every code, so this switch is redundant
+// with that lookup by design — it exists purely to keep the mapping style
+// consistent with EngineError and to force a compile error if a new
+// IdentityErrorCode is added without an explicit status decision here.
 function httpStatusForIdentityCode(code: IdentityErrorCode): number {
   switch (code) {
     case IdentityErrorCode.NOT_FOUND:
       return 404;
+    case IdentityErrorCode.ALREADY_TRK:
+      return 409;
     default: {
       // Exhaustiveness guard — new codes must be mapped above.
       const _: never = code;

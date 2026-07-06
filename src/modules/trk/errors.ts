@@ -6,10 +6,21 @@ import { AppError } from '../../infrastructure/errors/app-error.js';
 export const IdentityErrorCode = {
   // No identity exists for the given UUID or verified contact.
   NOT_FOUND: 'IDENTITY_NOT_FOUND',
+  // The identity has already transitioned to TRK; a second transition
+  // attempt is rejected without modifying the database (Sprint 7).
+  ALREADY_TRK: 'IDENTITY_ALREADY_TRK',
 } as const;
 
 export type IdentityErrorCode =
   (typeof IdentityErrorCode)[keyof typeof IdentityErrorCode];
+
+// Statuses are keyed by code so each new IdentityErrorCode must be given an
+// explicit status here — adding a code without a corresponding entry is a
+// compile error (TypeScript enforces the Record is total).
+const IDENTITY_ERROR_STATUS: Record<IdentityErrorCode, number> = {
+  [IdentityErrorCode.NOT_FOUND]: 404,
+  [IdentityErrorCode.ALREADY_TRK]: 409,
+};
 
 // ─── IdentityError ──────────────────────────────────────────────────────────────
 // Extends AppError so the existing isAppError() guard catches identity errors
@@ -18,7 +29,7 @@ export class IdentityError extends AppError {
   readonly identityCode: IdentityErrorCode;
 
   constructor(message: string, identityCode: IdentityErrorCode) {
-    super(message, identityCode, 404);
+    super(message, identityCode, IDENTITY_ERROR_STATUS[identityCode]);
     this.name = 'IdentityError';
     this.identityCode = identityCode;
     Object.setPrototypeOf(this, new.target.prototype);
