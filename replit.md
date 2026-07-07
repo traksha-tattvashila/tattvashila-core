@@ -67,9 +67,13 @@ Copy `.env.example` to `.env` and fill in values:
 - **Sprint 1** ✅ — Foundation Layer (env config, logger, module registry, bootloader)
 - **Sprint 2** ✅ — Infrastructure Layer (PostgreSQL + Drizzle ORM, migrations, ServiceContainer, AppError)
 - **Sprint 3** ✅ — Constitutional Identity Data Foundation (identity_state enum, identities table, identity_operational_metadata table, migration)
-- **Sprint 4** — Tattvaloka (Constitutional Participation Layer)
-- **Sprint 5** — Tattvapeetha (Constitutional Growth Layer)
-- **Sprint 6** — Raksha Basic (Women's Safety Foundation)
+- **Sprint 4** ✅ — Tattvaloka (Constitutional Participation Layer)
+- **Sprint 5** ✅ — Tattvapeetha (Constitutional Growth Layer)
+- **Sprint 6** ✅ — Raksha Basic (Women's Safety Foundation)
+- **Sprint 7** ✅ — TRK Transition Service
+- **Sprint 8** ✅ — Provider Integration Layer (Twilio SMS, SMTP email, provider factory, health checks)
+- **Sprint 9** ✅ — Authentication Infrastructure (auth_credentials, refresh_tokens, JWT, scrypt, refresh token rotation, auth middleware, /auth routes)
+- **Sprint 10** ✅ — Authorization Foundation (roles, permissions, role_permissions, identity_roles, permission evaluator, resolve-permissions middleware, requirePermission guard, /authorization/me)
 
 ## User Preferences
 

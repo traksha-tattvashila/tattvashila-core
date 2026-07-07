@@ -14,6 +14,8 @@ import { createExpressApp } from './http/server.js';
 import { loadAuthConfig } from './modules/auth/config.js';
 import { createAuthRepository } from './modules/auth/repository.js';
 import { createAuthService } from './modules/auth/service.js';
+import { createAuthorizationRepository } from './modules/authorization/repository.js';
+import { createAuthorizationService } from './modules/authorization/service.js';
 import { createVerificationEngine } from './modules/verification/engine.js';
 import { createTrkRepository } from './modules/trk/repository.js';
 import { createIdentityService } from './modules/trk/service.js';
@@ -74,12 +76,17 @@ boot()
       config: authConfig,
     });
 
+    // ── Sprint 10 services (Authorization Foundation) ─────────────────────────
+    const authorizationRepository = createAuthorizationRepository(ctx.db);
+    const authorizationService = createAuthorizationService(authorizationRepository);
+
     // ── HTTP server ───────────────────────────────────────────────────────────
     const app = createExpressApp(ctx, {
       orchestrationService,
       identityService,
       transitionService,
       authService,
+      authorizationService,
     });
 
     const server = app.listen(PORT, '0.0.0.0', () => {

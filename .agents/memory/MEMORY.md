@@ -2,4 +2,5 @@
 - [Verification concurrency design](verification-concurrency.md) — Option B locking decision and where the per-record lock lives.
 - [Provider wiring rules](provider-wiring.md) — dev providers gate, production fail-fast, and where real providers must be injected.
 - [Auth module boundary design](auth-module-boundary.md) — no DB FK from auth tables to identities; existence enforced via IdentityService instead.
+- [Authorization Foundation design](authorization-foundation.md) — permission model, middleware chain order, and cross-module dependency rules for Sprint 10.
 - [TRK identity state transitions](trk-state-transitions.md) — atomic conditional UPDATE pattern for TMP->TRK; no app-level lock needed.

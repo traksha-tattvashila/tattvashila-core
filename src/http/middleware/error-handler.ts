@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import type { Logger } from '../../foundation/logger.js';
 import { isAppError } from '../../infrastructure/errors/app-error.js';
 import { AuthErrorCode, isAuthError } from '../../modules/auth/errors.js';
+import { AuthorizationErrorCode, isAuthorizationError } from '../../modules/authorization/errors.js';
 import { IdentityErrorCode, isIdentityError } from '../../modules/trk/errors.js';
 import { EngineErrorCode, isEngineError } from '../../modules/verification/errors.js';
 
@@ -80,6 +81,19 @@ function httpStatusForAuthCode(code: AuthErrorCode): number {
   }
 }
 
+// ─── Authorization error → HTTP status mapping ───────────────────────────────
+function httpStatusForAuthorizationCode(code: AuthorizationErrorCode): number {
+  switch (code) {
+    case AuthorizationErrorCode.FORBIDDEN:
+      return 403;
+    default: {
+      const _: never = code;
+      void _;
+      return 403;
+    }
+  }
+}
+
 // ─── Global error handler ─────────────────────────────────────────────────────
 // Must be registered as the last middleware in the Express app so that
 // errors forwarded via next(err) from all preceding handlers reach it.
@@ -106,6 +120,12 @@ export function errorHandler(logger: Logger) {
     if (isAuthError(err)) {
       const status = httpStatusForAuthCode(err.authCode);
       res.status(status).json({ error: { code: err.authCode, message: err.message } });
+      return;
+    }
+
+    if (isAuthorizationError(err)) {
+      const status = httpStatusForAuthorizationCode(err.authzCode);
+      res.status(status).json({ error: { code: err.authzCode, message: err.message } });
       return;
     }
 
