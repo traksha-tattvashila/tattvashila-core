@@ -4,6 +4,7 @@ import type { Logger } from '../../foundation/logger.js';
 import { isAppError } from '../../infrastructure/errors/app-error.js';
 import { AuthErrorCode, isAuthError } from '../../modules/auth/errors.js';
 import { AuthorizationErrorCode, isAuthorizationError } from '../../modules/authorization/errors.js';
+import { ProfileErrorCode, isProfileError } from '../../modules/profile/errors.js';
 import { IdentityErrorCode, isIdentityError } from '../../modules/trk/errors.js';
 import { EngineErrorCode, isEngineError } from '../../modules/verification/errors.js';
 
@@ -94,6 +95,21 @@ function httpStatusForAuthorizationCode(code: AuthorizationErrorCode): number {
   }
 }
 
+// ─── Profile error → HTTP status mapping ─────────────────────────────────────
+function httpStatusForProfileCode(code: ProfileErrorCode): number {
+  switch (code) {
+    case ProfileErrorCode.NOT_FOUND:
+      return 404;
+    case ProfileErrorCode.ALREADY_EXISTS:
+      return 409;
+    default: {
+      const _: never = code;
+      void _;
+      return 400;
+    }
+  }
+}
+
 // ─── Global error handler ─────────────────────────────────────────────────────
 // Must be registered as the last middleware in the Express app so that
 // errors forwarded via next(err) from all preceding handlers reach it.
@@ -126,6 +142,12 @@ export function errorHandler(logger: Logger) {
     if (isAuthorizationError(err)) {
       const status = httpStatusForAuthorizationCode(err.authzCode);
       res.status(status).json({ error: { code: err.authzCode, message: err.message } });
+      return;
+    }
+
+    if (isProfileError(err)) {
+      const status = httpStatusForProfileCode(err.profileCode);
+      res.status(status).json({ error: { code: err.profileCode, message: err.message } });
       return;
     }
 

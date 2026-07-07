@@ -3,4 +3,5 @@
 - [Provider wiring rules](provider-wiring.md) — dev providers gate, production fail-fast, and where real providers must be injected.
 - [Auth module boundary design](auth-module-boundary.md) — no DB FK from auth tables to identities; existence enforced via IdentityService instead.
 - [Authorization Foundation design](authorization-foundation.md) — permission model, middleware chain order, and cross-module dependency rules for Sprint 10.
+- [Profile module design](profile-module-design.md) — 1:1 FK to identities, ON DELETE RESTRICT, repository catches unique violation, requireAuth wiring pattern.
 - [TRK identity state transitions](trk-state-transitions.md) — atomic conditional UPDATE pattern for TMP->TRK; no app-level lock needed.

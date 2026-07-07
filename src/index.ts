@@ -16,6 +16,8 @@ import { createAuthRepository } from './modules/auth/repository.js';
 import { createAuthService } from './modules/auth/service.js';
 import { createAuthorizationRepository } from './modules/authorization/repository.js';
 import { createAuthorizationService } from './modules/authorization/service.js';
+import { createProfileRepository } from './modules/profile/repository.js';
+import { createProfileService } from './modules/profile/service.js';
 import { createVerificationEngine } from './modules/verification/engine.js';
 import { createTrkRepository } from './modules/trk/repository.js';
 import { createIdentityService } from './modules/trk/service.js';
@@ -80,6 +82,10 @@ boot()
     const authorizationRepository = createAuthorizationRepository(ctx.db);
     const authorizationService = createAuthorizationService(authorizationRepository);
 
+    // ── Sprint 11 services (Identity Profile Foundation) ──────────────────────
+    const profileRepository = createProfileRepository(ctx.db);
+    const profileService = createProfileService(profileRepository);
+
     // ── HTTP server ───────────────────────────────────────────────────────────
     const app = createExpressApp(ctx, {
       orchestrationService,
@@ -87,6 +93,7 @@ boot()
       transitionService,
       authService,
       authorizationService,
+      profileService,
     });
 
     const server = app.listen(PORT, '0.0.0.0', () => {

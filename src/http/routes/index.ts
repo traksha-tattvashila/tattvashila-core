@@ -5,6 +5,8 @@ import { createAuthMiddleware } from '../../modules/auth/http/middleware.js';
 import type { AuthService } from '../../modules/auth/service.js';
 import { createAuthorizationRouter } from '../../modules/authorization/http/routes.js';
 import type { AuthorizationService } from '../../modules/authorization/service.js';
+import { createProfileRouter } from '../../modules/profile/http/routes.js';
+import type { ProfileService } from '../../modules/profile/service.js';
 import type { IdentityService } from '../../modules/trk/service.js';
 import { createIdentityRouter } from '../../modules/trk/http/routes.js';
 import { createTrkTransitionRouter } from '../../modules/trk/http/transition-routes.js';
@@ -22,6 +24,7 @@ export interface AppDependencies {
   readonly transitionService: TrkTransitionService;
   readonly authService: AuthService;
   readonly authorizationService: AuthorizationService;
+  readonly profileService: ProfileService;
 }
 
 // ─── Route registration ───────────────────────────────────────────────────────
@@ -41,6 +44,13 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
     createAuthorizationRouter(
       createAuthMiddleware(deps.authService),
       deps.authorizationService,
+    ),
+  );
+  app.use(
+    '/profile',
+    createProfileRouter(
+      createAuthMiddleware(deps.authService),
+      deps.profileService,
     ),
   );
 }
