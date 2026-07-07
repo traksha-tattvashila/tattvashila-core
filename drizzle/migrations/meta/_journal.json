@@ -15,6 +15,13 @@
       "when": 1783328209873,
       "tag": "0001_adorable_clea",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783424740724,
+      "tag": "0002_spooky_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }

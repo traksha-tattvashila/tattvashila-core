@@ -1,16 +1,19 @@
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
+import { identities } from '../trk/schema.js';
+
 // ─── Authentication credentials ─────────────────────────────────────────────
-// One password credential per constitutional identity. identityId is stored
-// as a plain uuid column, not a foreign key — auth is a separate module and
-// must not reach into the trk module's schema internals. Existence of the
-// referenced identity is enforced at the service layer via IdentityService,
-// which is the approved cross-module interface.
-//
-// Deliberately does not carry a foreign key to `identities`: modules own
-// their own domain and never share DB-level internals with one another.
+// One password credential per constitutional identity. identityId carries a
+// FK to identities.id with ON DELETE RESTRICT so the database enforces the
+// constitutional rule that authentication can only exist for a real identity.
+// The FK imports identities from the trk schema — a schema-level dependency
+// in the same allowed direction as the service-layer dependency that already
+// exists (AuthService → IdentityService). Module isolation is an application-
+// layer concern; DB integrity constraints are not a module boundary violation.
 export const authCredentials = pgTable('auth_credentials', {
-  identityId: uuid('identity_id').primaryKey(),
+  identityId: uuid('identity_id')
+    .primaryKey()
+    .references(() => identities.id, { onDelete: 'restrict' }),
 
   passwordHash: text('password_hash').notNull(),
 
@@ -29,10 +32,14 @@ export const authCredentials = pgTable('auth_credentials', {
 // hash is persisted, so a database read alone cannot be used to mint a
 // session. A token is single-use: refresh() revokes the presented token and
 // issues a new one (rotation), so a stolen-then-replayed token is detectable.
+// identityId carries a FK to identities.id for the same integrity reasons as
+// auth_credentials above.
 export const refreshTokens = pgTable('refresh_tokens', {
   id: uuid('id').primaryKey().defaultRandom(),
 
-  identityId: uuid('identity_id').notNull(),
+  identityId: uuid('identity_id')
+    .notNull()
+    .references(() => identities.id, { onDelete: 'restrict' }),
 
   tokenHash: text('token_hash').notNull().unique(),
 
