@@ -1,8 +1,7 @@
+import type { RequestHandler } from 'express';
 import { Router } from 'express';
 
 import { asyncHandler } from '../../../http/middleware/async-handler.js';
-import { createAuthMiddleware } from '../../auth/http/middleware.js';
-import type { AuthService } from '../../auth/service.js';
 import type { AuthorizationService } from '../service.js';
 import { createAuthorizationHandlers } from './handlers.js';
 import {
@@ -15,19 +14,21 @@ import {
 //   GET /me — returns the authenticated identity's resolved permission set
 //
 // requirePermission and createResolvePermissionsMiddleware are re-exported
-// as the canonical way for other route modules to protect individual routes.
+// as the canonical primitives for other route modules to protect routes.
 // Usage in another router:
 //   import { createResolvePermissionsMiddleware, requirePermission }
 //     from '../../authorization/http/middleware.js';
 export { createResolvePermissionsMiddleware, requirePermission };
 
+// requireAuth is received as an already-constructed RequestHandler so this
+// router has no dependency on the auth module's internals. The caller
+// (http/routes/index.ts) is responsible for constructing it from authService.
 export function createAuthorizationRouter(
-  authService: AuthService,
+  requireAuth: RequestHandler,
   authorizationService: AuthorizationService,
 ): Router {
   const router = Router();
   const handlers = createAuthorizationHandlers();
-  const requireAuth = createAuthMiddleware(authService);
   const resolvePermissions = createResolvePermissionsMiddleware(authorizationService);
 
   router.get(

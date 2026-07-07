@@ -45,6 +45,22 @@ export interface AuthorizationService {
 export function createAuthorizationService(
   repository: AuthorizationRepository,
 ): AuthorizationService {
+  // ── Inner implementations using closures ───────────────────────────────────
+  // Defined as named functions so grantPermissionToRole can reference them
+  // directly without `this`, avoiding fragile implicit binding in object literals.
+
+  async function defineRole(name: string, description?: string): Promise<Role> {
+    const existing = await repository.findRoleByName(name);
+    if (existing !== undefined) return existing;
+    return repository.createRole(name, description);
+  }
+
+  async function definePermission(resource: string, action: string): Promise<Permission> {
+    const existing = await repository.findPermissionByResourceAction(resource, action);
+    if (existing !== undefined) return existing;
+    return repository.createPermission(resource, action);
+  }
+
   return {
     // ── Permission resolution ──────────────────────────────────────────────
     async resolvePermissionsForIdentity(identityId) {
@@ -55,8 +71,7 @@ export function createAuthorizationService(
       }
 
       const roleIds = assignedRoles.map((r) => r.id);
-      const assignedPermissions =
-        await repository.findPermissionsByRoleIds(roleIds);
+      const assignedPermissions = await repository.findPermissionsByRoleIds(roleIds);
 
       const permissionKeys = new Set(
         assignedPermissions.map((p) => formatPermissionKey(p.resource, p.action)),
@@ -65,28 +80,15 @@ export function createAuthorizationService(
       return { identityId, permissions: permissionKeys };
     },
 
-    // ── Role definition ────────────────────────────────────────────────────
-    async defineRole(name, description) {
-      const existing = await repository.findRoleByName(name);
-      if (existing !== undefined) return existing;
-      return repository.createRole(name, description);
-    },
+    defineRole,
 
-    // ── Permission definition ──────────────────────────────────────────────
-    async definePermission(resource, action) {
-      const existing = await repository.findPermissionByResourceAction(
-        resource,
-        action,
-      );
-      if (existing !== undefined) return existing;
-      return repository.createPermission(resource, action);
-    },
+    definePermission,
 
     // ── Grant permission to role ───────────────────────────────────────────
     async grantPermissionToRole(roleName, resource, action) {
       const [role, permission] = await Promise.all([
-        this.defineRole(roleName),
-        this.definePermission(resource, action),
+        defineRole(roleName),
+        definePermission(resource, action),
       ]);
       await repository.assignPermissionToRole(role.id, permission.id);
     },

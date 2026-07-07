@@ -1,6 +1,7 @@
 import type { Express } from 'express';
 
 import { createAuthRouter } from '../../modules/auth/http/routes.js';
+import { createAuthMiddleware } from '../../modules/auth/http/middleware.js';
 import type { AuthService } from '../../modules/auth/service.js';
 import { createAuthorizationRouter } from '../../modules/authorization/http/routes.js';
 import type { AuthorizationService } from '../../modules/authorization/service.js';
@@ -37,6 +38,9 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
   app.use('/auth', createAuthRouter(deps.authService, deps.identityService));
   app.use(
     '/authorization',
-    createAuthorizationRouter(deps.authService, deps.authorizationService),
+    createAuthorizationRouter(
+      createAuthMiddleware(deps.authService),
+      deps.authorizationService,
+    ),
   );
 }
