@@ -4,8 +4,10 @@ description: Which sprints are constitutionally frozen and the rules governing a
 ---
 
 Sprint 1 (Foundation), Sprint 2 (Infrastructure), Sprint 3 (Constitutional Identity Schema),
-Sprint 4A (Verification Infrastructure), Sprint 4B (Verification Engine), and Sprint 5
-(Verification API + TMP Issuance) are all constitutionally frozen.
+Sprint 4A (Verification Infrastructure), Sprint 4B (Verification Engine), Sprint 5
+(Verification API + TMP Issuance), Sprint 11 (Constitutional Identity Profile Foundation),
+Sprint 12 (Public Constitutional Identifier System), and Sprint 13 (Constitutional Identity
+Discovery Layer) are all constitutionally frozen.
 
 **Rule:** No sprint may be modified unless a genuine implementation bug is discovered OR an
 explicit constitutional amendment is approved by the user.

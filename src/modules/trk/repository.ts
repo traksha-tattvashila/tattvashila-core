@@ -59,6 +59,15 @@ export interface TrkRepository {
     contactValue: string,
   ): Promise<Identity | undefined>;
 
+  // Retrieves a full identity read model by its active public identifier
+  // (TMP-…, TRK-…, or INS-…).
+  // Returns undefined if no active public identifier matches — callers decide
+  // how to surface absence (the discovery service maps this to IdentityError).
+  //
+  // Archived public identifiers (e.g. a TMP that has been superseded by TRK)
+  // do not match — only the currently active identifier resolves.
+  findByPublicId(publicId: string): Promise<Identity | undefined>;
+
   // Atomically transitions an identity from TMP to TRK.
   //
   // Implemented as a single conditional UPDATE (WHERE id = ? AND
@@ -260,6 +269,24 @@ export function createTrkRepository(db: DatabaseClient): TrkRepository {
     async findById(id) {
       const rows = await selectIdentityRows(db, id);
       return rowsToIdentity(rows);
+    },
+
+    async findByPublicId(publicId) {
+      const rows = await db
+        .select({ identityId: publicIdentifiers.identityId })
+        .from(publicIdentifiers)
+        .where(
+          and(
+            eq(publicIdentifiers.publicId, publicId),
+            eq(publicIdentifiers.isActive, true),
+          ),
+        )
+        .limit(1);
+
+      const match = rows[0];
+      if (!match) return undefined;
+
+      return this.findById(match.identityId);
     },
 
     async findByVerifiedContact(contactType, contactValue) {

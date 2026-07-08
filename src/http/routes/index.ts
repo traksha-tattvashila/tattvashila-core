@@ -7,6 +7,8 @@ import { createAuthorizationRouter } from '../../modules/authorization/http/rout
 import type { AuthorizationService } from '../../modules/authorization/service.js';
 import { createProfileRouter } from '../../modules/profile/http/routes.js';
 import type { ProfileService } from '../../modules/profile/service.js';
+import type { IdentityDiscoveryService } from '../../modules/trk/discovery-service.js';
+import { createIdentityDiscoveryRouter } from '../../modules/trk/http/discovery-routes.js';
 import type { IdentityService } from '../../modules/trk/service.js';
 import { createIdentityRouter } from '../../modules/trk/http/routes.js';
 import { createTrkTransitionRouter } from '../../modules/trk/http/transition-routes.js';
@@ -22,6 +24,7 @@ export interface AppDependencies {
   readonly orchestrationService: VerificationOrchestrationService;
   readonly identityService: IdentityService;
   readonly transitionService: TrkTransitionService;
+  readonly discoveryService: IdentityDiscoveryService;
   readonly authService: AuthService;
   readonly authorizationService: AuthorizationService;
   readonly profileService: ProfileService;
@@ -38,6 +41,7 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
 
   app.use('/identities', createIdentityRouter(deps.identityService));
   app.use('/identities', createTrkTransitionRouter(deps.transitionService));
+  app.use('/identities', createIdentityDiscoveryRouter(deps.discoveryService));
   app.use('/auth', createAuthRouter(deps.authService, deps.identityService));
   app.use(
     '/authorization',
