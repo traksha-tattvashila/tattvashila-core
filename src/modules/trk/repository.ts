@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { AppError } from '../../infrastructure/errors/app-error.js';
 import type { DatabaseClient } from '../../infrastructure/database/client.js';
@@ -96,9 +96,16 @@ function isUniqueViolation(error: unknown): boolean {
 // Collision probability for a 16-character uppercase-alphanumeric identifier
 // is 1 / 36^16 (≈ 4.7 × 10^−25) per attempt — retries exist as a
 // constitutional safeguard, not as a realistic code path.
+//
+// This function is always called from inside a db.transaction() callback.
+// A plain INSERT failure inside a PostgreSQL transaction aborts the whole
+// transaction, making subsequent statements fail with "current transaction is
+// aborted" rather than retrying cleanly. Each attempt is therefore wrapped in
+// a savepoint: on unique violation, ROLLBACK TO SAVEPOINT restores the
+// transaction to a usable state before the next iteration.
 const MAX_PUBLIC_ID_RETRIES = 5;
 
-type Insertable = Pick<DatabaseClient, 'insert'>;
+type Insertable = Pick<DatabaseClient, 'insert' | 'execute'>;
 
 async function insertPublicIdWithRetry(
   executor: Insertable,
@@ -108,6 +115,8 @@ async function insertPublicIdWithRetry(
 ): Promise<string> {
   for (let attempt = 1; attempt <= MAX_PUBLIC_ID_RETRIES; attempt++) {
     const publicId = generate();
+    const sp = `pub_id_retry_${attempt}`;
+    await executor.execute(sql.raw(`SAVEPOINT ${sp}`));
     try {
       await executor.insert(publicIdentifiers).values({
         identityId,
@@ -115,17 +124,26 @@ async function insertPublicIdWithRetry(
         idFamily: family,
         isActive: true,
       });
+      await executor.execute(sql.raw(`RELEASE SAVEPOINT ${sp}`));
       return publicId;
     } catch (error) {
+      // Roll back to the savepoint so the outer transaction remains usable
+      // for the next attempt or for any writes that follow a re-throw.
+      await executor.execute(sql.raw(`ROLLBACK TO SAVEPOINT ${sp}`));
       if (isUniqueViolation(error) && attempt < MAX_PUBLIC_ID_RETRIES) {
-        // Collision — regenerate and retry
         continue;
       }
-      throw error;
+      // All retries exhausted on collision, or a non-collision error.
+      throw isUniqueViolation(error)
+        ? new AppError(
+            'Failed to generate a unique public identifier after maximum retries.',
+            'PUBLIC_ID_GENERATION_FAILED',
+            500,
+          )
+        : error;
     }
   }
-  // Unreachable: the loop always returns or throws before exhausting retries
-  // in any realistic scenario, but TypeScript requires a path here.
+  // TypeScript cannot prove the loop always returns or throws — unreachable.
   throw new AppError(
     'Failed to generate a unique public identifier after maximum retries.',
     'PUBLIC_ID_GENERATION_FAILED',
