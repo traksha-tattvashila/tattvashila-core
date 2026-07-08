@@ -5,3 +5,4 @@
 - [Authorization Foundation design](authorization-foundation.md) — permission model, middleware chain order, and cross-module dependency rules for Sprint 10.
 - [Profile module design](profile-module-design.md) — 1:1 FK to identities, ON DELETE RESTRICT, repository catches unique violation, requireAuth wiring pattern.
 - [TRK identity state transitions](trk-state-transitions.md) — atomic conditional UPDATE pattern for TMP->TRK; no app-level lock needed.
+- [Public identifier design](public-id-design.md) — TMP/TRK/INS generation, collision retry, archival pattern, and UUID-vs-publicId boundary.

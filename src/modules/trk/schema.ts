@@ -1,10 +1,13 @@
+import { sql } from 'drizzle-orm';
 import {
+  boolean,
   index,
   pgEnum,
   pgTable,
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -93,6 +96,73 @@ export const identityVerifiedContacts = pgTable(
     identityIdIdx: index('identity_verified_contacts_identity_id_idx').on(
       table.identityId,
     ),
+  }),
+);
+
+// ─── Public identifier family ─────────────────────────────────────────────────
+// Discriminates the three constitutional public identifier families.
+// INS is included here for schema completeness; institution registration is
+// out of scope for this sprint and will be wired in a future amendment.
+export const idFamily = pgEnum('id_family', ['TMP', 'TRK', 'INS']);
+
+// ─── Public identifiers ───────────────────────────────────────────────────────
+// Stores the constitutional public identifiers issued to an identity.
+//
+// One record is active (is_active = true) at any given time per identity.
+// On TMP → TRK transition the TMP record is archived (is_active set to false,
+// archived_at recorded) and a new TRK record is inserted — two separate writes,
+// both inside the same transaction that updates identity_state.
+//
+// Constitutional invariants enforced here:
+// • publicId UNIQUE — no identifier is ever reissued, even after archival.
+// • identityId FK RESTRICT — a public identifier cannot outlive its identity.
+// • Archived rows are never deleted — the history is permanent.
+export const publicIdentifiers = pgTable(
+  'public_identifiers',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+
+    identityId: uuid('identity_id')
+      .notNull()
+      .references(() => identities.id, { onDelete: 'restrict' }),
+
+    // The full formatted public identifier (e.g. "TMP-7Q2M8KPX91AR6WZT").
+    // UNIQUE enforces that no value is ever reissued — even archived ones.
+    publicId: text('public_id').notNull(),
+
+    idFamily: idFamily('id_family').notNull(),
+
+    // false once the identifier has been superseded (TMP → TRK transition).
+    // An identity always has exactly one active public identifier.
+    isActive: boolean('is_active').notNull().default(true),
+
+    // Set to the transition timestamp when the identifier is archived.
+    // null for any currently-active identifier.
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
+
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    // Enforces global uniqueness — no public identifier is ever reused.
+    publicIdUnique: unique('public_identifiers_public_id_unique').on(
+      table.publicId,
+    ),
+
+    identityIdIdx: index('public_identifiers_identity_id_idx').on(
+      table.identityId,
+    ),
+
+    // Database-level enforcement that each identity has at most one active
+    // public identifier at any time. The WHERE clause makes this a partial
+    // unique index: archived rows (is_active = false) are excluded so the
+    // same identity can accumulate a TMP and a TRK record without conflict.
+    oneActivePerIdentity: uniqueIndex(
+      'public_identifiers_one_active_per_identity',
+    )
+      .on(table.identityId)
+      .where(sql`${table.isActive} = true`),
   }),
 );
 

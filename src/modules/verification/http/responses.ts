@@ -13,6 +13,7 @@ export interface InitiateVerificationResponse {
 export interface IdentityResponse {
   readonly id: string;
   readonly state: string;
+  readonly publicId: string;
 }
 
 // POST /verifications/:verificationId/confirm → 200

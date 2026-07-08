@@ -16,11 +16,17 @@ export interface VerifiedContact {
 }
 
 // ─── Identity ─────────────────────────────────────────────────────────────────
-// The full read model for a constitutional identity: its state, every
-// verified contact linked to it, and its record timestamps.
+// The full read model for a constitutional identity: its constitutional state,
+// its active public identifier, every verified contact linked to it, and its
+// record timestamps.
+//
+// `publicId` is always present for any identity created after Sprint 12.
+// The UUID (`id`) remains the internal constitutional identifier and is never
+// used as the public-facing identity.
 export interface Identity {
   readonly id: string;
   readonly state: string;
+  readonly publicId: string;
   readonly contacts: readonly VerifiedContact[];
   readonly createdAt: Date;
   readonly updatedAt: Date;

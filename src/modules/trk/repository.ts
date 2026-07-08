@@ -3,16 +3,21 @@ import { and, eq } from 'drizzle-orm';
 import { AppError } from '../../infrastructure/errors/app-error.js';
 import type { DatabaseClient } from '../../infrastructure/database/client.js';
 import type { ContactType, Identity } from './models.js';
+import { generateTmpId, generateTrkId } from './public-id/generator.js';
 import {
   identities,
   identityOperationalMetadata,
   identityVerifiedContacts,
+  publicIdentifiers,
 } from './schema.js';
 
 // ─── Created identity ─────────────────────────────────────────────────────────
+// Minimal shape returned after TMP issuance. `publicId` is the newly-issued
+// constitutional public identifier for the identity.
 export interface CreatedIdentity {
   readonly id: string;
   readonly state: string;
+  readonly publicId: string;
 }
 
 // ─── TRK transition outcome ────────────────────────────────────────────────────
@@ -29,9 +34,9 @@ export type TransitionToTrkOutcome =
 // ─── TRK repository interface ─────────────────────────────────────────────────
 export interface TrkRepository {
   // Creates a constitutional TMP identity together with its verified contact
-  // records and initial operational metadata inside a single transaction.
-  // Either all three inserts succeed or none are written — there is no
-  // partial identity creation.
+  // records, initial operational metadata, and TMP public identifier inside a
+  // single transaction. Either all writes succeed or none are written — there
+  // is no partial identity creation.
   //
   // Throws AppError('CONTACT_ALREADY_REGISTERED', 409) if either contact
   // value is already linked to an existing identity.
@@ -40,8 +45,8 @@ export interface TrkRepository {
     email: string; // lowercase — normalised by the caller
   }): Promise<CreatedIdentity>;
 
-  // Retrieves a full identity read model (state, verified contacts,
-  // timestamps) by its constitutional UUID.
+  // Retrieves a full identity read model (state, public identifier, verified
+  // contacts, timestamps) by its constitutional UUID.
   // Returns undefined if no identity exists with that id — callers decide
   // how to surface absence (the domain service maps this to IdentityError).
   findById(id: string): Promise<Identity | undefined>;
@@ -63,6 +68,12 @@ export interface TrkRepository {
   // observes the already-updated row and reports ALREADY_TRK. No new
   // identity record is ever created and the UUID never changes; only
   // identity_state is written.
+  //
+  // On a successful transition, the TMP public identifier is archived and a
+  // new, independently-generated TRK public identifier is issued — all
+  // inside the same transaction. The TMP identifier is preserved in the
+  // public_identifiers table (archived, never deleted) so it can never be
+  // reissued to another identity.
   transitionToTrk(id: string): Promise<TransitionToTrkOutcome>;
 }
 
@@ -77,12 +88,57 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
+// ─── Collision-resistant public identifier insertion ──────────────────────────
+// Generates a public identifier and inserts it. If the generated value
+// collides with an existing one (unique violation on public_id), a new value
+// is generated and the insert is retried up to MAX_RETRIES times.
+//
+// Collision probability for a 16-character uppercase-alphanumeric identifier
+// is 1 / 36^16 (≈ 4.7 × 10^−25) per attempt — retries exist as a
+// constitutional safeguard, not as a realistic code path.
+const MAX_PUBLIC_ID_RETRIES = 5;
+
+type Insertable = Pick<DatabaseClient, 'insert'>;
+
+async function insertPublicIdWithRetry(
+  executor: Insertable,
+  identityId: string,
+  family: 'TMP' | 'TRK' | 'INS',
+  generate: () => string,
+): Promise<string> {
+  for (let attempt = 1; attempt <= MAX_PUBLIC_ID_RETRIES; attempt++) {
+    const publicId = generate();
+    try {
+      await executor.insert(publicIdentifiers).values({
+        identityId,
+        publicId,
+        idFamily: family,
+        isActive: true,
+      });
+      return publicId;
+    } catch (error) {
+      if (isUniqueViolation(error) && attempt < MAX_PUBLIC_ID_RETRIES) {
+        // Collision — regenerate and retry
+        continue;
+      }
+      throw error;
+    }
+  }
+  // Unreachable: the loop always returns or throws before exhausting retries
+  // in any realistic scenario, but TypeScript requires a path here.
+  throw new AppError(
+    'Failed to generate a unique public identifier after maximum retries.',
+    'PUBLIC_ID_GENERATION_FAILED',
+    500,
+  );
+}
+
 // ─── Shared row-select query ───────────────────────────────────────────────────
-// The identity+contacts join is needed both outside a transaction (findById)
-// and inside one (transitionToTrk, which must read the post-update row using
-// the same transaction that wrote it). `Queryable` captures the minimal
-// `select` surface shared by DatabaseClient and its transaction handle so
-// the query can run against either.
+// Joins identities, their verified contacts, and the single active public
+// identifier. Used both outside a transaction (findById) and inside one
+// (transitionToTrk, which must read the post-update row within the same
+// transaction). `Queryable` captures the minimal `select` surface shared by
+// DatabaseClient and its transaction handle.
 type Queryable = Pick<DatabaseClient, 'select'>;
 
 async function selectIdentityRows(
@@ -97,11 +153,19 @@ async function selectIdentityRows(
       updatedAt: identities.updatedAt,
       contactType: identityVerifiedContacts.contactType,
       contactValue: identityVerifiedContacts.contactValue,
+      publicId: publicIdentifiers.publicId,
     })
     .from(identities)
     .leftJoin(
       identityVerifiedContacts,
       eq(identityVerifiedContacts.identityId, identities.id),
+    )
+    .leftJoin(
+      publicIdentifiers,
+      and(
+        eq(publicIdentifiers.identityId, identities.id),
+        eq(publicIdentifiers.isActive, true),
+      ),
     )
     .where(eq(identities.id, id));
 }
@@ -150,7 +214,18 @@ export function createTrkRepository(db: DatabaseClient): TrkRepository {
             processingState: 'PENDING',
           });
 
-          return { id: identity.id, state: identity.state };
+          // 4. Issue the TMP constitutional public identifier.
+          //    Collision retry is handled inside insertPublicIdWithRetry.
+          //    All four writes are part of the same transaction — if any
+          //    fails, none are committed.
+          const publicId = await insertPublicIdWithRetry(
+            tx,
+            identity.id,
+            'TMP',
+            generateTmpId,
+          );
+
+          return { id: identity.id, state: identity.state, publicId };
         });
       } catch (error) {
         if (isUniqueViolation(error)) {
@@ -205,12 +280,33 @@ export function createTrkRepository(db: DatabaseClient): TrkRepository {
           .returning({ id: identities.id });
 
         if (updated.length > 0) {
+          // Archive the current TMP public identifier.
+          // The archived row is never deleted — it is permanently preserved
+          // so the TMP value can never be reissued to any other identity.
+          const now = new Date();
+          await tx
+            .update(publicIdentifiers)
+            .set({ isActive: false, archivedAt: now })
+            .where(
+              and(
+                eq(publicIdentifiers.identityId, id),
+                eq(publicIdentifiers.isActive, true),
+              ),
+            );
+
+          // Issue a new, independently-generated TRK public identifier.
+          // generateTrkId() is called fresh — it has no relationship to the
+          // TMP identifier that was just archived.
+          await insertPublicIdWithRetry(tx, id, 'TRK', generateTrkId);
+
+          // Read the post-transition identity using the same transaction so
+          // the returned model reflects the new TRK state and public ID.
           const rows = await selectIdentityRows(tx, id);
           const identity = rowsToIdentity(rows);
 
           if (!identity) {
-            // Unreachable in practice: the UPDATE above just confirmed the
-            // row exists and matched, within the same transaction.
+            // Unreachable: the UPDATE above confirmed the row exists and
+            // matched within the same transaction.
             throw new AppError(
               'Identity transition failed: no row found after update.',
               'DB_UPDATE_FAILED',
@@ -239,7 +335,7 @@ export function createTrkRepository(db: DatabaseClient): TrkRepository {
 }
 
 // ─── Row mapping ───────────────────────────────────────────────────────────────
-// Shape of a single joined row from the findById() query above.
+// Shape of a single joined row from the selectIdentityRows() query above.
 interface IdentityContactRow {
   id: string;
   state: string;
@@ -247,15 +343,28 @@ interface IdentityContactRow {
   updatedAt: Date;
   contactType: ContactType | null;
   contactValue: string | null;
+  publicId: string | null;
 }
 
-// Collapses the joined identity+contacts rows into a single Identity read
-// model. A left join means an identity with zero contacts still returns one
-// row (with null contact columns), so the empty-contacts case is handled
-// naturally rather than as a special case.
+// Collapses the joined identity+contacts+publicIdentifier rows into a single
+// Identity read model. A left join means an identity with zero contacts still
+// returns one row (with null contact columns), so the empty-contacts case is
+// handled naturally rather than as a special case.
+//
+// `publicId` is non-null for every identity created from Sprint 12 onward.
+// If it is null (pre-Sprint-12 row without a public identifier), the method
+// throws rather than silently returning an incomplete model.
 function rowsToIdentity(rows: IdentityContactRow[]): Identity | undefined {
   const first = rows[0];
   if (!first) return undefined;
+
+  if (first.publicId === null) {
+    throw new AppError(
+      'Identity is missing a public identifier. This identity predates Sprint 12 and must be reissued.',
+      'MISSING_PUBLIC_ID',
+      500,
+    );
+  }
 
   const contacts = rows
     .filter(
@@ -267,6 +376,7 @@ function rowsToIdentity(rows: IdentityContactRow[]): Identity | undefined {
   return {
     id: first.id,
     state: first.state,
+    publicId: first.publicId,
     contacts,
     createdAt: first.createdAt,
     updatedAt: first.updatedAt,

@@ -14,6 +14,7 @@ export interface VerifiedContactResponse {
 export interface IdentityResponse {
   readonly id: string;
   readonly state: string;
+  readonly publicId: string;
   readonly contacts: readonly VerifiedContactResponse[];
   readonly createdAt: string; // ISO 8601
   readonly updatedAt: string; // ISO 8601
@@ -27,6 +28,7 @@ export function toIdentityResponse(identity: Identity): IdentityResponse {
   return {
     id: identity.id,
     state: identity.state,
+    publicId: identity.publicId,
     contacts: identity.contacts.map((contact) => ({
       type: contact.type,
       value: contact.value,
