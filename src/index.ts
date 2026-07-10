@@ -22,6 +22,8 @@ import { createVerificationEngine } from './modules/verification/engine.js';
 import { createTrkRepository } from './modules/trk/repository.js';
 import { createInstitutionRepository } from './modules/ins/repository.js';
 import { createInstitutionService } from './modules/ins/service.js';
+import { createTattvalokaRepository } from './modules/tattvaloka/repository.js';
+import { createTattvalokaService } from './modules/tattvaloka/service.js';
 import { createIdentityDiscoveryService } from './modules/trk/discovery-service.js';
 import { createIdentityService } from './modules/trk/service.js';
 import { createTrkTransitionService } from './modules/trk/transition-service.js';
@@ -96,6 +98,10 @@ boot()
     const profileRepository = createProfileRepository(ctx.db);
     const profileService = createProfileService(profileRepository);
 
+    // ── Sprint 15 services (Constitutional Tattvaloka Foundation) ─────────────
+    const tattvalokaRepository = createTattvalokaRepository(ctx.db);
+    const tattvalokaService = createTattvalokaService(tattvalokaRepository);
+
     // ── HTTP server ───────────────────────────────────────────────────────────
     const app = createExpressApp(ctx, {
       orchestrationService,
@@ -106,6 +112,7 @@ boot()
       authService,
       authorizationService,
       profileService,
+      tattvalokaService,
     });
 
     const server = app.listen(PORT, '0.0.0.0', () => {

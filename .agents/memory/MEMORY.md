@@ -6,3 +6,4 @@
 - [Profile module design](profile-module-design.md) — 1:1 FK to identities, ON DELETE RESTRICT, repository catches unique violation, requireAuth wiring pattern.
 - [TRK identity state transitions](trk-state-transitions.md) — atomic conditional UPDATE pattern for TMP->TRK; no app-level lock needed.
 - [Public identifier design](public-id-design.md) — TMP/TRK/INS generation, collision retry, archival pattern, and UUID-vs-publicId boundary.
+- [Tattvaloka foundation design](tattvaloka-foundation.md) — participation-layer module is a 1:1 identity-linked record only; no app-specific features belong here.
