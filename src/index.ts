@@ -20,6 +20,8 @@ import { createProfileRepository } from './modules/profile/repository.js';
 import { createProfileService } from './modules/profile/service.js';
 import { createVerificationEngine } from './modules/verification/engine.js';
 import { createTrkRepository } from './modules/trk/repository.js';
+import { createInstitutionRepository } from './modules/ins/repository.js';
+import { createInstitutionService } from './modules/ins/service.js';
 import { createIdentityDiscoveryService } from './modules/trk/discovery-service.js';
 import { createIdentityService } from './modules/trk/service.js';
 import { createTrkTransitionService } from './modules/trk/transition-service.js';
@@ -73,6 +75,10 @@ boot()
     // ── Sprint 13 services (Constitutional Identity Discovery) ────────────────
     const discoveryService = createIdentityDiscoveryService(trkRepository);
 
+    // ── Sprint 14 services (Constitutional Institution Identity) ──────────────
+    const institutionRepository = createInstitutionRepository(ctx.db);
+    const institutionService = createInstitutionService(institutionRepository);
+
     // ── Sprint 9 services (Authentication Infrastructure) ────────────────────
     const authConfig = loadAuthConfig();
     const authRepository = createAuthRepository(ctx.db);
@@ -96,6 +102,7 @@ boot()
       identityService,
       transitionService,
       discoveryService,
+      institutionService,
       authService,
       authorizationService,
       profileService,

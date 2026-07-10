@@ -5,6 +5,7 @@ import { isAppError } from '../../infrastructure/errors/app-error.js';
 import { AuthErrorCode, isAuthError } from '../../modules/auth/errors.js';
 import { AuthorizationErrorCode, isAuthorizationError } from '../../modules/authorization/errors.js';
 import { ProfileErrorCode, isProfileError } from '../../modules/profile/errors.js';
+import { InstitutionErrorCode, isInstitutionError } from '../../modules/ins/errors.js';
 import { IdentityErrorCode, isIdentityError } from '../../modules/trk/errors.js';
 import { EngineErrorCode, isEngineError } from '../../modules/verification/errors.js';
 
@@ -30,6 +31,19 @@ function httpStatusForEngineCode(code: EngineErrorCode): number {
       const _: never = code;
       void _;
       return 400;
+    }
+  }
+}
+
+// ─── Institution error → HTTP status mapping ──────────────────────────────────
+function httpStatusForInstitutionCode(code: InstitutionErrorCode): number {
+  switch (code) {
+    case InstitutionErrorCode.NOT_FOUND:
+      return 404;
+    default: {
+      const _: never = code;
+      void _;
+      return 404;
     }
   }
 }
@@ -124,6 +138,12 @@ export function errorHandler(logger: Logger) {
     if (isEngineError(err)) {
       const status = httpStatusForEngineCode(err.engineCode);
       res.status(status).json({ error: { code: err.engineCode, message: err.message } });
+      return;
+    }
+
+    if (isInstitutionError(err)) {
+      const status = httpStatusForInstitutionCode(err.institutionCode);
+      res.status(status).json({ error: { code: err.institutionCode, message: err.message } });
       return;
     }
 
