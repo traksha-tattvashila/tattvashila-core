@@ -7,6 +7,7 @@ import { AuthorizationErrorCode, isAuthorizationError } from '../../modules/auth
 import { ProfileErrorCode, isProfileError } from '../../modules/profile/errors.js';
 import { InstitutionErrorCode, isInstitutionError } from '../../modules/ins/errors.js';
 import { TattvalokaErrorCode, isTattvalokaError } from '../../modules/tattvaloka/errors.js';
+import { MembershipErrorCode, isMembershipError } from '../../modules/tattvaloka/membership-errors.js';
 import { IdentityErrorCode, isIdentityError } from '../../modules/trk/errors.js';
 import { EngineErrorCode, isEngineError } from '../../modules/verification/errors.js';
 
@@ -140,6 +141,21 @@ function httpStatusForTattvalokaCode(code: TattvalokaErrorCode): number {
   }
 }
 
+// ─── Membership error → HTTP status mapping ───────────────────────────────────
+function httpStatusForMembershipCode(code: MembershipErrorCode): number {
+  switch (code) {
+    case MembershipErrorCode.NOT_FOUND:
+      return 404;
+    case MembershipErrorCode.ALREADY_EXISTS:
+      return 409;
+    default: {
+      const _: never = code;
+      void _;
+      return 400;
+    }
+  }
+}
+
 // ─── Global error handler ─────────────────────────────────────────────────────
 // Must be registered as the last middleware in the Express app so that
 // errors forwarded via next(err) from all preceding handlers reach it.
@@ -190,6 +206,12 @@ export function errorHandler(logger: Logger) {
     if (isTattvalokaError(err)) {
       const status = httpStatusForTattvalokaCode(err.tattvalokaCode);
       res.status(status).json({ error: { code: err.tattvalokaCode, message: err.message } });
+      return;
+    }
+
+    if (isMembershipError(err)) {
+      const status = httpStatusForMembershipCode(err.membershipCode);
+      res.status(status).json({ error: { code: err.membershipCode, message: err.message } });
       return;
     }
 

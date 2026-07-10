@@ -19,3 +19,14 @@ future, separately-approved sprints, not part of this foundation.
 participation state itself. Anything resembling course content, enrollment,
 or engagement tracking is a new constitutional decision requiring explicit
 sprint approval, not an extension of the existing participant record.
+
+**Membership sub-layer (Sprint 16):** membership is a distinct 1:1-with-identity
+record from participation, gated on participation already existing (service
+calls the participation service's getParticipant and lets its NOT_FOUND
+propagate — service-to-service dependency, never repository-to-repository).
+
+**Drizzle schema-discovery gotcha:** `drizzle.config.ts` globs only files
+literally named `schema.ts` (`./src/**/schema.ts`). New tables in a module
+with multiple domain concepts (e.g. tattvaloka's participants + memberships)
+must all live in that module's single `schema.ts`, not a `<feature>-schema.ts`
+sibling, or `db:generate` silently skips them with "No schema changes".
