@@ -7,8 +7,8 @@ Sprint 1 (Foundation), Sprint 2 (Infrastructure), Sprint 3 (Constitutional Ident
 Sprint 4A (Verification Infrastructure), Sprint 4B (Verification Engine), Sprint 5
 (Verification API + TMP Issuance), Sprint 11 (Constitutional Identity Profile Foundation),
 Sprint 12 (Public Constitutional Identifier System), Sprint 13 (Constitutional Identity
-Discovery Layer), and Sprint 14 (Constitutional Institution Identity Foundation) are all
-constitutionally frozen.
+Discovery Layer), Sprint 14 (Constitutional Institution Identity Foundation), and Sprint 15
+(Constitutional Tattvaloka Foundation) are all constitutionally frozen.
 
 **Rule:** No sprint may be modified unless a genuine implementation bug is discovered OR an
 explicit constitutional amendment is approved by the user.
