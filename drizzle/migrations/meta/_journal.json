@@ -71,6 +71,13 @@
       "when": 1783706442681,
       "tag": "0009_chilly_robbie_robertson",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783743384144,
+      "tag": "0010_chief_living_lightning",
+      "breakpoints": true
     }
   ]
 }

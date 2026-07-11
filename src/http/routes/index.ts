@@ -13,6 +13,8 @@ import type { TattvalokaService } from '../../modules/tattvaloka/service.js';
 import { createTattvalokaRouter } from '../../modules/tattvaloka/http/routes.js';
 import type { MembershipService } from '../../modules/tattvaloka/membership-service.js';
 import { createMembershipRouter } from '../../modules/tattvaloka/http/membership-routes.js';
+import type { ContentService } from '../../modules/tattvaloka/content-service.js';
+import { createContentRouter } from '../../modules/tattvaloka/http/content-routes.js';
 import type { IdentityDiscoveryService } from '../../modules/trk/discovery-service.js';
 import { createIdentityDiscoveryRouter } from '../../modules/trk/http/discovery-routes.js';
 import type { IdentityService } from '../../modules/trk/service.js';
@@ -37,6 +39,7 @@ export interface AppDependencies {
   readonly profileService: ProfileService;
   readonly tattvalokaService: TattvalokaService;
   readonly membershipService: MembershipService;
+  readonly contentService: ContentService;
 }
 
 // ─── Route registration ───────────────────────────────────────────────────────
@@ -81,4 +84,5 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
       deps.membershipService,
     ),
   );
+  app.use('/tattvaloka', createContentRouter(deps.contentService));
 }
