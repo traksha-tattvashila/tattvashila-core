@@ -6,12 +6,25 @@ import type { TattvalokaService } from './service.js';
 // ─── PostgreSQL error codes ────────────────────────────────────────────────────
 const PG_UNIQUE_VIOLATION = '23505';
 
+function pgCode(error: unknown): string | undefined {
+  if (!(error instanceof Error)) {
+    return undefined;
+  }
+  // drizzle-orm's node-postgres driver wraps the underlying pg error in
+  // `cause` rather than exposing `code` directly on the thrown Error —
+  // check both so a unique-violation is recognised regardless of shape.
+  if ('code' in error && typeof (error as { code?: unknown }).code === 'string') {
+    return (error as { code: string }).code;
+  }
+  const cause = (error as { cause?: unknown }).cause;
+  if (cause instanceof Error && 'code' in cause && typeof (cause as { code?: unknown }).code === 'string') {
+    return (cause as { code: string }).code;
+  }
+  return undefined;
+}
+
 function isUniqueViolation(error: unknown): boolean {
-  return (
-    error instanceof Error &&
-    'code' in error &&
-    (error as { code?: string }).code === PG_UNIQUE_VIOLATION
-  );
+  return pgCode(error) === PG_UNIQUE_VIOLATION;
 }
 
 // ─── Tattvaloka membership service interface ──────────────────────────────────
