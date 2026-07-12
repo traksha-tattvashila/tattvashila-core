@@ -32,6 +32,8 @@ import { createProgressRepository } from './modules/tattvaloka/progress-reposito
 import { createProgressService } from './modules/tattvaloka/progress-service.js';
 import { createDiscoveryRepository as createTattvalokaDiscoveryRepository } from './modules/tattvaloka/discovery-repository.js';
 import { createDiscoveryService as createTattvalokaDiscoveryService } from './modules/tattvaloka/discovery-service.js';
+import { createTattvapeethaRepository } from './modules/tattvapeetha/repository.js';
+import { createTattvapeethaService } from './modules/tattvapeetha/service.js';
 import { createIdentityDiscoveryService } from './modules/trk/discovery-service.js';
 import { createIdentityService } from './modules/trk/service.js';
 import { createTrkTransitionService } from './modules/trk/transition-service.js';
@@ -134,6 +136,10 @@ boot()
       membershipService,
     );
 
+    // ── Sprint 20 services (Tattvapeetha Constitutional Foundation) ───────────
+    const tattvapeethaRepository = createTattvapeethaRepository(ctx.db);
+    const tattvapeethaService = createTattvapeethaService(tattvapeethaRepository);
+
     // ── HTTP server ───────────────────────────────────────────────────────────
     const app = createExpressApp(ctx, {
       orchestrationService,
@@ -149,6 +155,7 @@ boot()
       contentService,
       progressService,
       tattvalokaDiscoveryService,
+      tattvapeethaService,
     });
 
     const server = app.listen(PORT, '0.0.0.0', () => {

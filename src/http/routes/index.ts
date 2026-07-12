@@ -19,6 +19,8 @@ import type { ProgressService } from '../../modules/tattvaloka/progress-service.
 import { createProgressRouter } from '../../modules/tattvaloka/http/progress-routes.js';
 import type { DiscoveryService as TattvalokaDiscoveryService } from '../../modules/tattvaloka/discovery-service.js';
 import { createDiscoveryRouter as createTattvalokaDiscoveryRouter } from '../../modules/tattvaloka/http/discovery-routes.js';
+import type { TattvapeethaService } from '../../modules/tattvapeetha/service.js';
+import { createTattvapeethaRouter } from '../../modules/tattvapeetha/http/routes.js';
 import type { IdentityDiscoveryService } from '../../modules/trk/discovery-service.js';
 import { createIdentityDiscoveryRouter } from '../../modules/trk/http/discovery-routes.js';
 import type { IdentityService } from '../../modules/trk/service.js';
@@ -46,6 +48,7 @@ export interface AppDependencies {
   readonly contentService: ContentService;
   readonly progressService: ProgressService;
   readonly tattvalokaDiscoveryService: TattvalokaDiscoveryService;
+  readonly tattvapeethaService: TattvapeethaService;
 }
 
 // ─── Route registration ───────────────────────────────────────────────────────
@@ -102,4 +105,5 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
     '/tattvaloka',
     createTattvalokaDiscoveryRouter(deps.tattvalokaDiscoveryService),
   );
+  app.use('/', createTattvapeethaRouter(deps.tattvapeethaService));
 }
