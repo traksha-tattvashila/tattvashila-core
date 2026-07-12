@@ -7,3 +7,4 @@
 - [TRK identity state transitions](trk-state-transitions.md) — atomic conditional UPDATE pattern for TMP->TRK; no app-level lock needed.
 - [Public identifier design](public-id-design.md) — TMP/TRK/INS generation, collision retry, archival pattern, and UUID-vs-publicId boundary.
 - [Tattvaloka foundation design](tattvaloka-foundation.md) — participation-layer module is a 1:1 identity-linked record only; no app-specific features belong here.
+- [Sprint 21 blocked: missing Shared Event History Foundation](sprint21-blocked-event-history.md) — roadmap Amendment A numbering conflict, waiting on corrected roadmap doc.
