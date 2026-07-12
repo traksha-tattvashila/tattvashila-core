@@ -30,6 +30,8 @@ import { createContentRepository } from './modules/tattvaloka/content-repository
 import { createContentService } from './modules/tattvaloka/content-service.js';
 import { createProgressRepository } from './modules/tattvaloka/progress-repository.js';
 import { createProgressService } from './modules/tattvaloka/progress-service.js';
+import { createDiscoveryRepository as createTattvalokaDiscoveryRepository } from './modules/tattvaloka/discovery-repository.js';
+import { createDiscoveryService as createTattvalokaDiscoveryService } from './modules/tattvaloka/discovery-service.js';
 import { createIdentityDiscoveryService } from './modules/trk/discovery-service.js';
 import { createIdentityService } from './modules/trk/service.js';
 import { createTrkTransitionService } from './modules/trk/transition-service.js';
@@ -124,6 +126,14 @@ boot()
       membershipService,
     );
 
+    // ── Sprint 19 services (Tattvaloka Discovery & Search) ────────────────────
+    const tattvalokaDiscoveryRepository = createTattvalokaDiscoveryRepository(ctx.db);
+    const tattvalokaDiscoveryService = createTattvalokaDiscoveryService(
+      tattvalokaDiscoveryRepository,
+      discoveryService,
+      membershipService,
+    );
+
     // ── HTTP server ───────────────────────────────────────────────────────────
     const app = createExpressApp(ctx, {
       orchestrationService,
@@ -138,6 +148,7 @@ boot()
       membershipService,
       contentService,
       progressService,
+      tattvalokaDiscoveryService,
     });
 
     const server = app.listen(PORT, '0.0.0.0', () => {

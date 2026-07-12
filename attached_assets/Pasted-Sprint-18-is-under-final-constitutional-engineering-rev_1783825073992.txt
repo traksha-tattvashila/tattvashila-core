@@ -1,0 +1,91 @@
+Sprint 18 is under final constitutional engineering review.
+
+Do NOT freeze Sprint 18.
+
+Do NOT begin Sprint 19.
+
+Review only the reported architectural concern.
+
+Do NOT redesign the architecture.
+
+Do NOT introduce new features.
+
+────────────────────────────────────────
+
+REVIEW POINT
+
+The implementation requires the client to supply unitIds when requesting aggregate progress instead of the Progress module traversing the Tattvaloka content hierarchy itself.
+
+Determine only:
+
+• Does this preserve the constitutional module boundaries established by Sprint 17?
+
+OR
+
+• Is this a genuine implementation defect that violates the approved Sprint 18 scope?
+
+Do NOT redesign the API.
+
+Do NOT redesign repository boundaries.
+
+Do NOT redesign service boundaries.
+
+Modify code only if a genuine implementation defect exists.
+
+────────────────────────────────────────
+
+WHEN FINISHED
+
+If fixes were required provide only:
+
+• Files modified
+
+• Bug fixed
+
+• Why it was a genuine implementation defect
+
+Otherwise provide only:
+
+• Review summary
+
+• Whether Sprint 18 is constitutionally correct
+
+• Remaining limitations (if any)
+
+If Sprint 18 is constitutionally correct:
+
+Approve Sprint 18.
+
+Freeze Sprint 18.
+
+Sprint 18 (Tattvaloka Progress & Completion Tracking) is now constitutionally frozen.
+
+Do not modify Sprint 18 in any future sprint unless:
+
+• a genuine implementation bug is discovered
+OR
+• an explicit constitutional amendment is approved.
+
+The repository state after Sprint 18 becomes the source of truth.
+
+Then begin Sprint 19 according to Backend-Roadmap.md.
+
+Do not invent a new roadmap.
+
+If Sprint 19 is defined, implement it following the established constitutional workflow:
+
+• Inspect the repository.
+• Reuse existing infrastructure.
+• Perform one concise engineering self-review.
+• Fix only genuine implementation defects.
+
+When finished provide only:
+
+• Files created
+• Files modified
+• Summary of implementation
+• Any architectural concern requiring approval
+
+Then stop.
+
+Do not begin Sprint 20.
