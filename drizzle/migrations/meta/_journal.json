@@ -78,6 +78,13 @@
       "when": 1783743384144,
       "tag": "0010_chief_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783744162365,
+      "tag": "0011_normal_tyrannus",
+      "breakpoints": true
     }
   ]
 }

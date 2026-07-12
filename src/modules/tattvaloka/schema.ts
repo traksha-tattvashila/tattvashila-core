@@ -247,3 +247,65 @@ export const tattvalokaContentUnitVersions = pgTable(
       .where(sql`${table.isCurrent} = true`),
   }),
 );
+
+// ─── Tattvaloka progress status ─────────────────────────────────────────────────
+// Closed constitutional enumeration for unit-level completion. "not-started"
+// is intentionally not a stored value — it is the implicit state when no
+// progress record exists for a given membership/content-version pair.
+export const tattvalokaProgressStatus = pgEnum('tattvaloka_progress_status', [
+  'in_progress',
+  'completed',
+]);
+
+// ─── Tattvaloka progress records ────────────────────────────────────────────────
+// Records a member's advancement through a specific, immutable content unit
+// version. Anchored to the membership record (Sprint 16), never to a raw
+// TMP/identity, and to a content unit *version* (Sprint 17), never to the
+// mutable unit — preserving exactly which substance the member engaged with.
+//
+// Constitutional rules:
+// — Exactly one progress record may exist per (membership, unit version)
+//   pair (UNIQUE on membership_id + unit_version_id).
+// — ON DELETE RESTRICT on both foreign keys: a membership or content version
+//   may never be deleted while a progress record still references it.
+// — A progress record is never deleted when its referenced version is
+//   superseded or its owning unit is retired — it remains permanently
+//   resolvable, satisfying historical accuracy.
+// — Aggregate progress is always computed from these records; no aggregate
+//   total is ever persisted here or elsewhere.
+export const tattvalokaProgressRecords = pgTable(
+  'tattvaloka_progress_records',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+
+    membershipId: uuid('membership_id')
+      .notNull()
+      .references(() => tattvalokaMemberships.id, { onDelete: 'restrict' }),
+
+    unitVersionId: uuid('unit_version_id')
+      .notNull()
+      .references(() => tattvalokaContentUnitVersions.id, { onDelete: 'restrict' }),
+
+    status: tattvalokaProgressStatus('status').notNull(),
+
+    startedAt: timestamp('started_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdateFn(() => new Date()),
+  },
+  (table) => ({
+    oneRecordPerMembershipVersion: unique(
+      'tattvaloka_progress_records_membership_id_unit_version_id_unique',
+    ).on(table.membershipId, table.unitVersionId),
+  }),
+);
