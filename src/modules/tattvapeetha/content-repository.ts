@@ -9,13 +9,13 @@ import type {
   ContentUnitVersion,
 } from './content-models.js';
 import {
-  tattvalokaContentModules,
-  tattvalokaContentPaths,
-  tattvalokaContentUnits,
-  tattvalokaContentUnitVersions,
+  tattvapeethaContentModules,
+  tattvapeethaContentPaths,
+  tattvapeethaContentUnits,
+  tattvapeethaContentUnitVersions,
 } from './schema.js';
 
-// ─── Tattvaloka content repository interface ────────────────────────────────────
+// ─── Tattvapeetha content repository interface ──────────────────────────────────
 // Persistence-only. No business rules live here — the content service
 // decides what constitutes a valid operation (hierarchy integrity, status
 // transitions, versioning discipline); the repository only executes reads
@@ -47,7 +47,7 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
   return {
     async createPath(contentKey, title) {
       const rows = await db
-        .insert(tattvalokaContentPaths)
+        .insert(tattvapeethaContentPaths)
         .values({ contentKey, title })
         .returning();
       return rows[0] as ContentPath;
@@ -56,24 +56,24 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
     async findPathById(id) {
       const rows = await db
         .select()
-        .from(tattvalokaContentPaths)
-        .where(eq(tattvalokaContentPaths.id, id))
+        .from(tattvapeethaContentPaths)
+        .where(eq(tattvapeethaContentPaths.id, id))
         .limit(1);
       return rows[0];
     },
 
     async updatePathStatus(id, status) {
       const rows = await db
-        .update(tattvalokaContentPaths)
+        .update(tattvapeethaContentPaths)
         .set({ status })
-        .where(eq(tattvalokaContentPaths.id, id))
+        .where(eq(tattvapeethaContentPaths.id, id))
         .returning();
       return rows[0] as ContentPath;
     },
 
     async createModule(pathId, contentKey, title) {
       const rows = await db
-        .insert(tattvalokaContentModules)
+        .insert(tattvapeethaContentModules)
         .values({ pathId, contentKey, title })
         .returning();
       return rows[0] as ContentModule;
@@ -82,24 +82,24 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
     async findModuleById(id) {
       const rows = await db
         .select()
-        .from(tattvalokaContentModules)
-        .where(eq(tattvalokaContentModules.id, id))
+        .from(tattvapeethaContentModules)
+        .where(eq(tattvapeethaContentModules.id, id))
         .limit(1);
       return rows[0];
     },
 
     async updateModuleStatus(id, status) {
       const rows = await db
-        .update(tattvalokaContentModules)
+        .update(tattvapeethaContentModules)
         .set({ status })
-        .where(eq(tattvalokaContentModules.id, id))
+        .where(eq(tattvapeethaContentModules.id, id))
         .returning();
       return rows[0] as ContentModule;
     },
 
     async createUnit(moduleId, contentKey) {
       const rows = await db
-        .insert(tattvalokaContentUnits)
+        .insert(tattvapeethaContentUnits)
         .values({ moduleId, contentKey })
         .returning();
       return rows[0] as ContentUnit;
@@ -108,17 +108,17 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
     async findUnitById(id) {
       const rows = await db
         .select()
-        .from(tattvalokaContentUnits)
-        .where(eq(tattvalokaContentUnits.id, id))
+        .from(tattvapeethaContentUnits)
+        .where(eq(tattvapeethaContentUnits.id, id))
         .limit(1);
       return rows[0];
     },
 
     async updateUnitStatus(id, status) {
       const rows = await db
-        .update(tattvalokaContentUnits)
+        .update(tattvapeethaContentUnits)
         .set({ status })
-        .where(eq(tattvalokaContentUnits.id, id))
+        .where(eq(tattvapeethaContentUnits.id, id))
         .returning();
       return rows[0] as ContentUnit;
     },
@@ -126,25 +126,25 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
     async addVersion(unitId, title, body) {
       return db.transaction(async (tx) => {
         const existing = await tx
-          .select({ versionNumber: tattvalokaContentUnitVersions.versionNumber })
-          .from(tattvalokaContentUnitVersions)
-          .where(eq(tattvalokaContentUnitVersions.unitId, unitId));
+          .select({ versionNumber: tattvapeethaContentUnitVersions.versionNumber })
+          .from(tattvapeethaContentUnitVersions)
+          .where(eq(tattvapeethaContentUnitVersions.unitId, unitId));
 
         const nextVersionNumber =
           existing.reduce((max, row) => Math.max(max, row.versionNumber), 0) + 1;
 
         await tx
-          .update(tattvalokaContentUnitVersions)
+          .update(tattvapeethaContentUnitVersions)
           .set({ isCurrent: false })
           .where(
             and(
-              eq(tattvalokaContentUnitVersions.unitId, unitId),
-              eq(tattvalokaContentUnitVersions.isCurrent, true),
+              eq(tattvapeethaContentUnitVersions.unitId, unitId),
+              eq(tattvapeethaContentUnitVersions.isCurrent, true),
             ),
           );
 
         const rows = await tx
-          .insert(tattvalokaContentUnitVersions)
+          .insert(tattvapeethaContentUnitVersions)
           .values({ unitId, versionNumber: nextVersionNumber, title, body, isCurrent: true })
           .returning();
 
@@ -155,11 +155,11 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
     async findCurrentVersion(unitId) {
       const rows = await db
         .select()
-        .from(tattvalokaContentUnitVersions)
+        .from(tattvapeethaContentUnitVersions)
         .where(
           and(
-            eq(tattvalokaContentUnitVersions.unitId, unitId),
-            eq(tattvalokaContentUnitVersions.isCurrent, true),
+            eq(tattvapeethaContentUnitVersions.unitId, unitId),
+            eq(tattvapeethaContentUnitVersions.isCurrent, true),
           ),
         )
         .limit(1);
@@ -169,8 +169,8 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
     async findVersionById(id) {
       const rows = await db
         .select()
-        .from(tattvalokaContentUnitVersions)
-        .where(eq(tattvalokaContentUnitVersions.id, id))
+        .from(tattvapeethaContentUnitVersions)
+        .where(eq(tattvapeethaContentUnitVersions.id, id))
         .limit(1);
       return rows[0];
     },
@@ -178,9 +178,9 @@ export function createContentRepository(db: DatabaseClient): ContentRepository {
     async listVersionsByUnitId(unitId) {
       return db
         .select()
-        .from(tattvalokaContentUnitVersions)
-        .where(eq(tattvalokaContentUnitVersions.unitId, unitId))
-        .orderBy(tattvalokaContentUnitVersions.versionNumber);
+        .from(tattvapeethaContentUnitVersions)
+        .where(eq(tattvapeethaContentUnitVersions.unitId, unitId))
+        .orderBy(tattvapeethaContentUnitVersions.versionNumber);
     },
   };
 }

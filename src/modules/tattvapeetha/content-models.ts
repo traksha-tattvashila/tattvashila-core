@@ -1,5 +1,5 @@
-// ─── Tattvaloka content domain models ───────────────────────────────────────────
-// Read-side domain shapes for the Tattvaloka content architecture application
+// ─── Tattvapeetha content domain models ─────────────────────────────────────────
+// Read-side domain shapes for the Tattvapeetha content architecture application
 // layer. Content is a fixed three-level hierarchy — Path → Module → Unit —
 // with substance living exclusively in immutable unit versions.
 

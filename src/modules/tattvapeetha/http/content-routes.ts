@@ -5,8 +5,8 @@ import { asyncHandler } from '../../../http/middleware/async-handler.js';
 import type { ContentService } from '../content-service.js';
 import { createContentHandlers } from './content-handlers.js';
 
-// ─── Tattvaloka content router ─────────────────────────────────────────────────
-// Mounts (relative to the parent /tattvaloka prefix), all under /content:
+// ─── Tattvapeetha content router ────────────────────────────────────────────────
+// Mounts (relative to the parent /tattvapeetha prefix), all under /content:
 //   POST /content/paths                     — create a content path
 //   GET  /content/paths/:id                 — retrieve a content path
 //   POST /content/paths/:id/status          — transition a path's status

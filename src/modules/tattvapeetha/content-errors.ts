@@ -1,7 +1,7 @@
 import { AppError } from '../../infrastructure/errors/app-error.js';
 
-// ─── Tattvaloka content error codes ─────────────────────────────────────────────
-// Domain-level error codes for the Tattvaloka content architecture
+// ─── Tattvapeetha content error codes ────────────────────────────────────────────
+// Domain-level error codes for the Tattvapeetha content architecture
 // application layer. Existing codes must not be renamed once callers depend
 // on them.
 export const ContentErrorCode = {
@@ -40,7 +40,7 @@ const CONTENT_ERROR_STATUS: Record<ContentErrorCode, number> = {
   [ContentErrorCode.UNIT_RETIRED]: 409,
 };
 
-// ─── ContentError ────────────────────────────────────────────────────────────────
+// ─── ContentError ─────────────────────────────────────────────────────────────────
 // Extends AppError so the existing isAppError() guard catches content errors
 // uniformly, while isContentError() allows narrowing to content-specific
 // codes.

@@ -1,10 +1,10 @@
 import type { AggregateProgress, UnitProgress } from '../progress-models.js';
 
-// ─── Tattvaloka progress API response models ────────────────────────────────────
+// ─── Tattvapeetha progress API response models ──────────────────────────────────
 
-// POST /tattvaloka/progress/units/:unitId/start    → 200
-// POST /tattvaloka/progress/units/:unitId/complete → 200
-// GET  /tattvaloka/progress/units/:unitId          → 200
+// POST /tattvapeetha/progress/units/:unitId/start    → 200
+// POST /tattvapeetha/progress/units/:unitId/complete → 200
+// GET  /tattvapeetha/progress/units/:unitId          → 200
 export interface UnitProgressResponse {
   readonly unitId: string;
   readonly status: UnitProgress['status'];
@@ -12,7 +12,7 @@ export interface UnitProgressResponse {
   readonly completedAt: string | null; // ISO 8601
 }
 
-// POST /tattvaloka/progress/aggregate → 200
+// POST /tattvapeetha/progress/aggregate → 200
 export interface AggregateProgressResponse {
   readonly total: number;
   readonly notStarted: number;

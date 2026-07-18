@@ -13,12 +13,12 @@ import type { TattvalokaService } from '../../modules/tattvaloka/service.js';
 import { createTattvalokaRouter } from '../../modules/tattvaloka/http/routes.js';
 import type { MembershipService } from '../../modules/tattvaloka/membership-service.js';
 import { createMembershipRouter } from '../../modules/tattvaloka/http/membership-routes.js';
-import type { ContentService } from '../../modules/tattvaloka/content-service.js';
-import { createContentRouter } from '../../modules/tattvaloka/http/content-routes.js';
-import type { ProgressService } from '../../modules/tattvaloka/progress-service.js';
-import { createProgressRouter } from '../../modules/tattvaloka/http/progress-routes.js';
-import type { DiscoveryService as TattvalokaDiscoveryService } from '../../modules/tattvaloka/discovery-service.js';
-import { createDiscoveryRouter as createTattvalokaDiscoveryRouter } from '../../modules/tattvaloka/http/discovery-routes.js';
+import type { ContentService } from '../../modules/tattvapeetha/content-service.js';
+import { createContentRouter } from '../../modules/tattvapeetha/http/content-routes.js';
+import type { ProgressService } from '../../modules/tattvapeetha/progress-service.js';
+import { createProgressRouter } from '../../modules/tattvapeetha/http/progress-routes.js';
+import type { DiscoveryService as TattvapeethaDiscoveryService } from '../../modules/tattvapeetha/discovery-service.js';
+import { createDiscoveryRouter as createTattvapeethaDiscoveryRouter } from '../../modules/tattvapeetha/http/discovery-routes.js';
 import type { TattvapeethaService } from '../../modules/tattvapeetha/service.js';
 import { createTattvapeethaRouter } from '../../modules/tattvapeetha/http/routes.js';
 import type { IdentityDiscoveryService } from '../../modules/trk/discovery-service.js';
@@ -47,7 +47,7 @@ export interface AppDependencies {
   readonly membershipService: MembershipService;
   readonly contentService: ContentService;
   readonly progressService: ProgressService;
-  readonly tattvalokaDiscoveryService: TattvalokaDiscoveryService;
+  readonly tattvapeethaDiscoveryService: TattvapeethaDiscoveryService;
   readonly tattvapeethaService: TattvapeethaService;
 }
 
@@ -93,17 +93,17 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
       deps.membershipService,
     ),
   );
-  app.use('/tattvaloka', createContentRouter(deps.contentService));
+  app.use('/tattvapeetha', createContentRouter(deps.contentService));
   app.use(
-    '/tattvaloka',
+    '/tattvapeetha',
     createProgressRouter(
       createAuthMiddleware(deps.authService),
       deps.progressService,
     ),
   );
   app.use(
-    '/tattvaloka',
-    createTattvalokaDiscoveryRouter(deps.tattvalokaDiscoveryService),
+    '/tattvapeetha',
+    createTattvapeethaDiscoveryRouter(deps.tattvapeethaDiscoveryService),
   );
   app.use('/', createTattvapeethaRouter(deps.tattvapeethaService));
 }

@@ -1,7 +1,7 @@
 import { AppError } from '../../infrastructure/errors/app-error.js';
 
-// ─── Tattvaloka progress error codes ────────────────────────────────────────────
-// Domain-level error codes for the Tattvaloka progress & completion tracking
+// ─── Tattvapeetha progress error codes ──────────────────────────────────────────
+// Domain-level error codes for the Tattvapeetha progress & completion tracking
 // application layer. Existing codes must not be renamed once callers depend
 // on them.
 export const ProgressErrorCode = {
@@ -26,7 +26,7 @@ const PROGRESS_ERROR_STATUS: Record<ProgressErrorCode, number> = {
   [ProgressErrorCode.UNIT_NOT_TRACKABLE]: 409,
 };
 
-// ─── ProgressError ───────────────────────────────────────────────────────────────
+// ─── ProgressError ────────────────────────────────────────────────────────────────
 // Extends AppError so the existing isAppError() guard catches progress
 // errors uniformly, while isProgressError() allows narrowing to
 // progress-specific codes.

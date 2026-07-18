@@ -2,10 +2,10 @@ import { and, eq, ilike, or } from 'drizzle-orm';
 
 import type { DatabaseClient } from '../../infrastructure/database/client.js';
 import {
-  tattvalokaContentModules,
-  tattvalokaContentPaths,
-  tattvalokaContentUnits,
-  tattvalokaContentUnitVersions,
+  tattvapeethaContentModules,
+  tattvapeethaContentPaths,
+  tattvapeethaContentUnits,
+  tattvapeethaContentUnitVersions,
 } from './schema.js';
 
 // ─── Discoverable content row ───────────────────────────────────────────────────
@@ -17,7 +17,7 @@ export interface DiscoverableContentRow {
   readonly position: number;
 }
 
-// ─── Tattvaloka discovery repository interface ──────────────────────────────────
+// ─── Tattvapeetha discovery repository interface ────────────────────────────────
 // Persistence-only. Holds no primary data — every method here is a read
 // query against the existing content tables (Sprint 17), scoped to
 // `status = 'published'` so drafts and retired content never surface in
@@ -37,17 +37,17 @@ export function createDiscoveryRepository(db: DatabaseClient): DiscoveryReposito
       const pattern = `%${query}%`;
       return db
         .select({
-          contentKey: tattvalokaContentPaths.contentKey,
-          title: tattvalokaContentPaths.title,
-          position: tattvalokaContentPaths.position,
+          contentKey: tattvapeethaContentPaths.contentKey,
+          title: tattvapeethaContentPaths.title,
+          position: tattvapeethaContentPaths.position,
         })
-        .from(tattvalokaContentPaths)
+        .from(tattvapeethaContentPaths)
         .where(
           and(
-            eq(tattvalokaContentPaths.status, 'published'),
+            eq(tattvapeethaContentPaths.status, 'published'),
             or(
-              ilike(tattvalokaContentPaths.title, pattern),
-              ilike(tattvalokaContentPaths.contentKey, pattern),
+              ilike(tattvapeethaContentPaths.title, pattern),
+              ilike(tattvapeethaContentPaths.contentKey, pattern),
             ),
           ),
         );
@@ -57,17 +57,17 @@ export function createDiscoveryRepository(db: DatabaseClient): DiscoveryReposito
       const pattern = `%${query}%`;
       return db
         .select({
-          contentKey: tattvalokaContentModules.contentKey,
-          title: tattvalokaContentModules.title,
-          position: tattvalokaContentModules.position,
+          contentKey: tattvapeethaContentModules.contentKey,
+          title: tattvapeethaContentModules.title,
+          position: tattvapeethaContentModules.position,
         })
-        .from(tattvalokaContentModules)
+        .from(tattvapeethaContentModules)
         .where(
           and(
-            eq(tattvalokaContentModules.status, 'published'),
+            eq(tattvapeethaContentModules.status, 'published'),
             or(
-              ilike(tattvalokaContentModules.title, pattern),
-              ilike(tattvalokaContentModules.contentKey, pattern),
+              ilike(tattvapeethaContentModules.title, pattern),
+              ilike(tattvapeethaContentModules.contentKey, pattern),
             ),
           ),
         );
@@ -77,24 +77,24 @@ export function createDiscoveryRepository(db: DatabaseClient): DiscoveryReposito
       const pattern = `%${query}%`;
       return db
         .select({
-          contentKey: tattvalokaContentUnits.contentKey,
-          title: tattvalokaContentUnitVersions.title,
-          position: tattvalokaContentUnits.position,
+          contentKey: tattvapeethaContentUnits.contentKey,
+          title: tattvapeethaContentUnitVersions.title,
+          position: tattvapeethaContentUnits.position,
         })
-        .from(tattvalokaContentUnits)
+        .from(tattvapeethaContentUnits)
         .innerJoin(
-          tattvalokaContentUnitVersions,
+          tattvapeethaContentUnitVersions,
           and(
-            eq(tattvalokaContentUnitVersions.unitId, tattvalokaContentUnits.id),
-            eq(tattvalokaContentUnitVersions.isCurrent, true),
+            eq(tattvapeethaContentUnitVersions.unitId, tattvapeethaContentUnits.id),
+            eq(tattvapeethaContentUnitVersions.isCurrent, true),
           ),
         )
         .where(
           and(
-            eq(tattvalokaContentUnits.status, 'published'),
+            eq(tattvapeethaContentUnits.status, 'published'),
             or(
-              ilike(tattvalokaContentUnitVersions.title, pattern),
-              ilike(tattvalokaContentUnits.contentKey, pattern),
+              ilike(tattvapeethaContentUnitVersions.title, pattern),
+              ilike(tattvapeethaContentUnits.contentKey, pattern),
             ),
           ),
         );

@@ -5,8 +5,8 @@ import type {
   ContentUnitVersion,
 } from '../content-models.js';
 
-// ─── Tattvaloka content API response models ────────────────────────────────────
-// Typed shapes returned by the Tattvaloka content HTTP endpoints. Dates are
+// ─── Tattvapeetha content API response models ──────────────────────────────────
+// Typed shapes returned by the Tattvapeetha content HTTP endpoints. Dates are
 // serialised to ISO 8601 — the domain model never leaks Date instances
 // directly to the HTTP layer.
 

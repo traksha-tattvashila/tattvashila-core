@@ -49,7 +49,7 @@ function assertValidTransition(from: string, to: string): void {
   }
 }
 
-// ─── Tattvaloka content service interface ─────────────────────────────────────
+// ─── Tattvapeetha content service interface ────────────────────────────────────
 // Defines the constitutional content hierarchy (Path → Module → Unit) and
 // its versioning discipline, independent of membership and progress.
 //

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// ─── GET /tattvaloka/discovery/content?q= ───────────────────────────────────────
+// ─── GET /tattvapeetha/discovery/content?q= ─────────────────────────────────────
 // The search term must be non-trivial — an empty or whitespace-only query
 // would otherwise match every published content row.
 export const ContentSearchQuerySchema = z.object({

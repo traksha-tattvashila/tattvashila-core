@@ -5,8 +5,8 @@ import { asyncHandler } from '../../../http/middleware/async-handler.js';
 import type { ProgressService } from '../progress-service.js';
 import { createProgressHandlers } from './progress-handlers.js';
 
-// ─── Tattvaloka progress router ─────────────────────────────────────────────────
-// Mounts (relative to the parent /tattvaloka prefix), all under /progress:
+// ─── Tattvapeetha progress router ────────────────────────────────────────────────
+// Mounts (relative to the parent /tattvapeetha prefix), all under /progress:
 //   POST /progress/units/:unitId/start     — start progress on a unit
 //   POST /progress/units/:unitId/complete  — mark a unit as completed
 //   GET  /progress/units/:unitId           — retrieve progress for a unit

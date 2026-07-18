@@ -2,24 +2,24 @@ import { and, eq } from 'drizzle-orm';
 
 import type { DatabaseClient } from '../../infrastructure/database/client.js';
 import type { ProgressRecord, StoredProgressStatus } from './progress-models.js';
-import { tattvalokaProgressRecords } from './schema.js';
+import { tattvapeethaProgressRecords } from './schema.js';
 
-// ─── Tattvaloka progress repository interface ───────────────────────────────────
+// ─── Tattvapeetha progress repository interface ─────────────────────────────────
 // Persistence-only. No business rules live here — the progress service
 // decides what constitutes a valid operation (allowed transitions, content
 // trackability); the repository only executes reads and writes against the
 // database.
 export interface ProgressRepository {
-  findByMembershipAndVersion(
-    membershipId: string,
+  findByIdentityAndVersion(
+    identityId: string,
     unitVersionId: string,
   ): Promise<ProgressRecord | undefined>;
 
   // Creates a new progress record. Callers must ensure no record already
-  // exists for this (membership, version) pair — the unique constraint
+  // exists for this (identity, version) pair — the unique constraint
   // enforces this at the database layer.
   create(
-    membershipId: string,
+    identityId: string,
     unitVersionId: string,
     status: StoredProgressStatus,
   ): Promise<ProgressRecord>;
@@ -35,25 +35,25 @@ export interface ProgressRepository {
 
 export function createProgressRepository(db: DatabaseClient): ProgressRepository {
   return {
-    async findByMembershipAndVersion(membershipId, unitVersionId) {
+    async findByIdentityAndVersion(identityId, unitVersionId) {
       const rows = await db
         .select()
-        .from(tattvalokaProgressRecords)
+        .from(tattvapeethaProgressRecords)
         .where(
           and(
-            eq(tattvalokaProgressRecords.membershipId, membershipId),
-            eq(tattvalokaProgressRecords.unitVersionId, unitVersionId),
+            eq(tattvapeethaProgressRecords.identityId, identityId),
+            eq(tattvapeethaProgressRecords.unitVersionId, unitVersionId),
           ),
         )
         .limit(1);
       return rows[0] as ProgressRecord | undefined;
     },
 
-    async create(membershipId, unitVersionId, status) {
+    async create(identityId, unitVersionId, status) {
       const rows = await db
-        .insert(tattvalokaProgressRecords)
+        .insert(tattvapeethaProgressRecords)
         .values({
-          membershipId,
+          identityId,
           unitVersionId,
           status,
           completedAt: status === 'completed' ? new Date() : undefined,
@@ -64,9 +64,9 @@ export function createProgressRepository(db: DatabaseClient): ProgressRepository
 
     async updateStatus(id, status, completedAt) {
       const rows = await db
-        .update(tattvalokaProgressRecords)
+        .update(tattvapeethaProgressRecords)
         .set({ status, completedAt })
-        .where(eq(tattvalokaProgressRecords.id, id))
+        .where(eq(tattvapeethaProgressRecords.id, id))
         .returning();
       return rows[0] as ProgressRecord;
     },

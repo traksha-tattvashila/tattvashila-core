@@ -1,5 +1,4 @@
 import type { ContentService } from './content-service.js';
-import type { MembershipService } from './membership-service.js';
 import type {
   AggregateProgress,
   ProgressRecord,
@@ -9,13 +8,12 @@ import type {
 import { ProgressError, ProgressErrorCode } from './progress-errors.js';
 import type { ProgressRepository } from './progress-repository.js';
 
-// ─── Tattvaloka progress service interface ──────────────────────────────────────
-// Records and computes a member's advancement through published content,
-// without redefining membership (Sprint 16) or content (Sprint 17).
+// ─── Tattvapeetha progress service interface ────────────────────────────────────
+// Records and computes an identity's advancement through published content.
 //
 // Constitutional rules:
-// — Every progress record references a membership record, never a raw
-//   identity — resolved here via MembershipService.getMembership().
+// — Every progress record references an identity directly, never a
+//   membership record from another module.
 // — Every progress record references an immutable content unit version,
 //   never a mutable unit — resolved here via ContentService.getCurrentVersion().
 // — Aggregate progress is always computed from stored records; no aggregate
@@ -52,7 +50,6 @@ export interface ProgressService {
 export function createProgressService(
   repository: ProgressRepository,
   contentService: ContentService,
-  membershipService: MembershipService,
 ): ProgressService {
   function toUnitProgress(
     unitId: string,
@@ -84,14 +81,14 @@ export function createProgressService(
   }
 
   async function setStatus(
-    membershipId: string,
+    identityId: string,
     unitVersionId: string,
     status: StoredProgressStatus,
   ): Promise<ProgressRecord> {
-    const existing = await repository.findByMembershipAndVersion(membershipId, unitVersionId);
+    const existing = await repository.findByIdentityAndVersion(identityId, unitVersionId);
 
     if (existing === undefined) {
-      return repository.create(membershipId, unitVersionId, status);
+      return repository.create(identityId, unitVersionId, status);
     }
 
     // Completed is terminal — it never regresses to in_progress.
@@ -116,37 +113,32 @@ export function createProgressService(
 
   return {
     async startUnitProgress(identityId, unitId) {
-      const membership = await membershipService.getMembership(identityId);
       const unitVersionId = await resolveTrackableUnitVersion(unitId);
-      const record = await setStatus(membership.id, unitVersionId, 'in_progress');
+      const record = await setStatus(identityId, unitVersionId, 'in_progress');
       return toUnitProgress(unitId, record);
     },
 
     async completeUnitProgress(identityId, unitId) {
-      const membership = await membershipService.getMembership(identityId);
       const unitVersionId = await resolveTrackableUnitVersion(unitId);
-      const record = await setStatus(membership.id, unitVersionId, 'completed');
+      const record = await setStatus(identityId, unitVersionId, 'completed');
       return toUnitProgress(unitId, record);
     },
 
     async getUnitProgress(identityId, unitId) {
-      const membership = await membershipService.getMembership(identityId);
       // A unit's current version must always be resolvable to report
       // progress against it, regardless of the unit's status — this is
       // what keeps historical progress records permanently readable even
       // after the unit is retired.
       const version = await contentService.getCurrentVersion(unitId);
-      const record = await repository.findByMembershipAndVersion(membership.id, version.id);
+      const record = await repository.findByIdentityAndVersion(identityId, version.id);
       return toUnitProgress(unitId, record);
     },
 
     async getAggregateProgress(identityId, unitIds) {
-      const membership = await membershipService.getMembership(identityId);
-
       const units: UnitProgress[] = [];
       for (const unitId of unitIds) {
         const version = await contentService.getCurrentVersion(unitId);
-        const record = await repository.findByMembershipAndVersion(membership.id, version.id);
+        const record = await repository.findByIdentityAndVersion(identityId, version.id);
         units.push(toUnitProgress(unitId, record));
       }
 

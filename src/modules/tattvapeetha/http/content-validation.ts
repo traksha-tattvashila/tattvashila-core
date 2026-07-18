@@ -18,7 +18,7 @@ const ContentKeySchema = z
 
 const TitleSchema = z.string().min(1).max(256);
 
-// ─── POST /tattvaloka/content/paths ────────────────────────────────────────────
+// ─── POST /tattvapeetha/content/paths ───────────────────────────────────────────
 export const CreatePathBodySchema = z
   .object({
     contentKey: ContentKeySchema,
@@ -27,7 +27,7 @@ export const CreatePathBodySchema = z
   .strict();
 export type CreatePathInput = z.infer<typeof CreatePathBodySchema>;
 
-// ─── POST /tattvaloka/content/modules ──────────────────────────────────────────
+// ─── POST /tattvapeetha/content/modules ─────────────────────────────────────────
 export const CreateModuleBodySchema = z
   .object({
     pathId: z.string().uuid(),
@@ -37,7 +37,7 @@ export const CreateModuleBodySchema = z
   .strict();
 export type CreateModuleInput = z.infer<typeof CreateModuleBodySchema>;
 
-// ─── POST /tattvaloka/content/units ────────────────────────────────────────────
+// ─── POST /tattvapeetha/content/units ───────────────────────────────────────────
 export const CreateUnitBodySchema = z
   .object({
     moduleId: z.string().uuid(),
@@ -46,7 +46,7 @@ export const CreateUnitBodySchema = z
   .strict();
 export type CreateUnitInput = z.infer<typeof CreateUnitBodySchema>;
 
-// ─── POST /tattvaloka/content/units/:id/versions ───────────────────────────────
+// ─── POST /tattvapeetha/content/units/:id/versions ──────────────────────────────
 export const AddVersionBodySchema = z
   .object({
     title: TitleSchema,
@@ -55,7 +55,7 @@ export const AddVersionBodySchema = z
   .strict();
 export type AddVersionInput = z.infer<typeof AddVersionBodySchema>;
 
-// ─── POST /tattvaloka/content/{paths,modules}/:id/status ───────────────────────
+// ─── POST /tattvapeetha/content/{paths,modules}/:id/status ──────────────────────
 // Only the closed constitutional enumeration is accepted; the service
 // enforces which transitions are actually permitted from the current state.
 export const TransitionStatusBodySchema = z

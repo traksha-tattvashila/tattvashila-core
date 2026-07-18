@@ -1,10 +1,7 @@
 import type { Request, Response } from 'express';
 
 import type { DiscoveryService } from '../discovery-service.js';
-import {
-  toContentSearchResultResponse,
-  toMemberDiscoveryResponse,
-} from './discovery-responses.js';
+import { toContentSearchResultResponse } from './discovery-responses.js';
 import { ContentSearchQuerySchema } from './discovery-validation.js';
 
 function sendValidationError(res: Response, error: { flatten(): unknown }): void {
@@ -17,13 +14,12 @@ function sendValidationError(res: Response, error: { flatten(): unknown }): void
   });
 }
 
-// ─── Tattvaloka discovery handlers ──────────────────────────────────────────────
+// ─── Tattvapeetha discovery handlers ────────────────────────────────────────────
 // Each handler is a plain async function. Route binding (method, path,
 // asyncHandler wrapper) is the responsibility of routes.ts. Handlers call
 // the discovery service and return JSON; no business logic lives here.
 export interface DiscoveryHandlers {
   searchContent(req: Request, res: Response): Promise<void>;
-  discoverMember(req: Request<{ publicId: string }>, res: Response): Promise<void>;
 }
 
 export function createDiscoveryHandlers(service: DiscoveryService): DiscoveryHandlers {
@@ -36,11 +32,6 @@ export function createDiscoveryHandlers(service: DiscoveryService): DiscoveryHan
       }
       const results = await service.searchContent(parsed.data.q);
       res.status(200).json(results.map(toContentSearchResultResponse));
-    },
-
-    async discoverMember(req, res) {
-      const result = await service.discoverMember(req.params.publicId);
-      res.status(200).json(toMemberDiscoveryResponse(result));
     },
   };
 }

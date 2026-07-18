@@ -24,7 +24,7 @@ function sendValidationError(res: Response, error: { flatten(): unknown }): void
   });
 }
 
-// ─── Tattvaloka progress handlers ───────────────────────────────────────────────
+// ─── Tattvapeetha progress handlers ─────────────────────────────────────────────
 // Each handler is a plain async function. Route binding (method, path,
 // asyncHandler wrapper, requireAuth middleware) is the responsibility of
 // routes.ts. Handlers call the progress service and return JSON; no

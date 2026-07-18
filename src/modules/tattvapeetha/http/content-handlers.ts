@@ -25,7 +25,7 @@ function sendValidationError(res: Response, error: { flatten(): unknown }): void
   });
 }
 
-// ─── Tattvaloka content handlers ───────────────────────────────────────────────
+// ─── Tattvapeetha content handlers ─────────────────────────────────────────────
 // Each handler is a plain async function. Route binding (method, path,
 // asyncHandler wrapper, middleware) is the responsibility of routes.ts.
 // Handlers call the content service and return JSON; no business logic

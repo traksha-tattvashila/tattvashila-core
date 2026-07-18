@@ -26,12 +26,13 @@ import { createTattvalokaRepository } from './modules/tattvaloka/repository.js';
 import { createTattvalokaService } from './modules/tattvaloka/service.js';
 import { createMembershipRepository } from './modules/tattvaloka/membership-repository.js';
 import { createMembershipService } from './modules/tattvaloka/membership-service.js';
-import { createContentRepository } from './modules/tattvaloka/content-repository.js';
-import { createContentService } from './modules/tattvaloka/content-service.js';
-import { createProgressRepository } from './modules/tattvaloka/progress-repository.js';
-import { createProgressService } from './modules/tattvaloka/progress-service.js';
-import { createDiscoveryRepository as createTattvalokaDiscoveryRepository } from './modules/tattvaloka/discovery-repository.js';
-import { createDiscoveryService as createTattvalokaDiscoveryService } from './modules/tattvaloka/discovery-service.js';
+import { createContentRepository } from './modules/tattvapeetha/content-repository.js';
+import { createContentService } from './modules/tattvapeetha/content-service.js';
+import { createProgressRepository } from './modules/tattvapeetha/progress-repository.js';
+import { createProgressService } from './modules/tattvapeetha/progress-service.js';
+import { createDiscoveryRepository as createTattvapeethaDiscoveryRepository } from './modules/tattvapeetha/discovery-repository.js';
+import { createDiscoveryService as createTattvapeethaDiscoveryService } from './modules/tattvapeetha/discovery-service.js';
+
 import { createTattvapeethaRepository } from './modules/tattvapeetha/repository.js';
 import { createTattvapeethaService } from './modules/tattvapeetha/service.js';
 import { createIdentityDiscoveryService } from './modules/trk/discovery-service.js';
@@ -116,24 +117,21 @@ boot()
     const membershipRepository = createMembershipRepository(ctx.db);
     const membershipService = createMembershipService(membershipRepository, tattvalokaService);
 
-    // ── Sprint 17 services (Tattvaloka Content Architecture) ──────────────────
+    // ── Sprint 17 services (Tattvapeetha Content Architecture) ────────────────
     const contentRepository = createContentRepository(ctx.db);
     const contentService = createContentService(contentRepository);
 
-    // ── Sprint 18 services (Tattvaloka Progress & Completion Tracking) ────────
+    // ── Sprint 18 services (Tattvapeetha Progress & Completion Tracking) ──────
     const progressRepository = createProgressRepository(ctx.db);
     const progressService = createProgressService(
       progressRepository,
       contentService,
-      membershipService,
     );
 
-    // ── Sprint 19 services (Tattvaloka Discovery & Search) ────────────────────
-    const tattvalokaDiscoveryRepository = createTattvalokaDiscoveryRepository(ctx.db);
-    const tattvalokaDiscoveryService = createTattvalokaDiscoveryService(
-      tattvalokaDiscoveryRepository,
-      discoveryService,
-      membershipService,
+    // ── Sprint 19 services (Tattvapeetha Discovery & Search) ──────────────────
+    const tattvapeethaDiscoveryRepository = createTattvapeethaDiscoveryRepository(ctx.db);
+    const tattvapeethaDiscoveryService = createTattvapeethaDiscoveryService(
+      tattvapeethaDiscoveryRepository,
     );
 
     // ── Sprint 20 services (Tattvapeetha Constitutional Foundation) ───────────
@@ -154,7 +152,7 @@ boot()
       membershipService,
       contentService,
       progressService,
-      tattvalokaDiscoveryService,
+      tattvapeethaDiscoveryService,
       tattvapeethaService,
     });
 

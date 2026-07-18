@@ -1,8 +1,7 @@
-// ─── Tattvaloka progress domain models ──────────────────────────────────────────
-// Read-side domain shapes for the Tattvaloka progress & completion tracking
-// application layer. A progress record anchors to a membership record
-// (Sprint 16) and an immutable content unit version (Sprint 17) — never to a
-// raw identity and never to a mutable content unit.
+// ─── Tattvapeetha progress domain models ────────────────────────────────────────
+// Read-side domain shapes for the Tattvapeetha progress & completion tracking
+// application layer. A progress record anchors to an identity directly and
+// an immutable content unit version (Sprint 17) — never to a mutable content unit.
 
 // Closed constitutional completion enumeration. "not-started" is a computed
 // state (absence of a record), never persisted.
@@ -15,7 +14,7 @@ export type StoredProgressStatus = Exclude<ProgressStatus, 'not_started'>;
 // The full read model for a progress record.
 export interface ProgressRecord {
   readonly id: string;
-  readonly membershipId: string;
+  readonly identityId: string;
   readonly unitVersionId: string;
   readonly status: StoredProgressStatus;
   readonly startedAt: Date;
