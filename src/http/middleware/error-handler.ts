@@ -62,6 +62,12 @@ function httpStatusForIdentityCode(code: IdentityErrorCode): number {
       return 404;
     case IdentityErrorCode.ALREADY_TRK:
       return 409;
+    case IdentityErrorCode.PHONE_NOT_VERIFIED:
+      return 422;
+    case IdentityErrorCode.EMAIL_NOT_VERIFIED:
+      return 422;
+    case IdentityErrorCode.WAITING_PERIOD_NOT_COMPLETE:
+      return 422;
     default: {
       // Exhaustiveness guard — new codes must be mapped above.
       const _: never = code;

@@ -9,6 +9,12 @@ export const IdentityErrorCode = {
   // The identity has already transitioned to TRK; a second transition
   // attempt is rejected without modifying the database (Sprint 7).
   ALREADY_TRK: 'IDENTITY_ALREADY_TRK',
+  // TRK eligibility: phone number has not been verified for this identity.
+  PHONE_NOT_VERIFIED: 'IDENTITY_PHONE_NOT_VERIFIED',
+  // TRK eligibility: email address has not been verified for this identity.
+  EMAIL_NOT_VERIFIED: 'IDENTITY_EMAIL_NOT_VERIFIED',
+  // TRK eligibility: the minimum waiting period as TMP has not yet elapsed.
+  WAITING_PERIOD_NOT_COMPLETE: 'IDENTITY_WAITING_PERIOD_NOT_COMPLETE',
 } as const;
 
 export type IdentityErrorCode =
@@ -20,6 +26,9 @@ export type IdentityErrorCode =
 const IDENTITY_ERROR_STATUS: Record<IdentityErrorCode, number> = {
   [IdentityErrorCode.NOT_FOUND]: 404,
   [IdentityErrorCode.ALREADY_TRK]: 409,
+  [IdentityErrorCode.PHONE_NOT_VERIFIED]: 422,
+  [IdentityErrorCode.EMAIL_NOT_VERIFIED]: 422,
+  [IdentityErrorCode.WAITING_PERIOD_NOT_COMPLETE]: 422,
 };
 
 // ─── IdentityError ──────────────────────────────────────────────────────────────
