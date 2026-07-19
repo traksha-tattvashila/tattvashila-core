@@ -61,7 +61,13 @@ export function registerRoutes(app: Express, deps: AppDependencies): void {
   );
 
   app.use('/identities', createIdentityRouter(deps.identityService));
-  app.use('/identities', createTrkTransitionRouter(deps.transitionService));
+  app.use(
+    '/identities',
+    createTrkTransitionRouter(
+      createAuthMiddleware(deps.authService),
+      deps.transitionService,
+    ),
+  );
   app.use('/identities', createIdentityDiscoveryRouter(deps.discoveryService));
   app.use('/institutions', createInstitutionRouter(deps.institutionService));
   app.use('/auth', createAuthRouter(deps.authService, deps.identityService));
